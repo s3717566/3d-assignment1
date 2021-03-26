@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 
 #if _WIN32
 # include <windows.h>
@@ -21,9 +22,15 @@ int g_screen_width = 0;
 int g_screen_height = 0;
 float g_last_time = 0.0;
 
+boolean moving_forward = false;
+boolean turning_left = false;
+boolean turning_right = false;
+
 #define MOVING_RIGHT 1
 #define MOVING_LEFT  -1
 #define ROTATEDELTA 2
+
+#define M_PI 3.14159265358979323846
 
 // DO NOT name your members like this!
 typedef struct {
@@ -35,8 +42,18 @@ typedef struct {
 	float rotation;
 } game_object_t;
 
+typedef struct {
+	//int s;           // size
+	float xpos, ypos;      // position
+	float r, g, b;   // colour
+	float direction;         // direction facing (out of 360 degrees)
+	int v;           // velocity in pixels per second
+	float rotation;
+} ship_object;
+
 #define NUM_OBJECTS 1
 game_object_t g_game_objects[NUM_OBJECTS];
+ship_object ship_obj;
 
 
 void game_object_init(game_object_t* obj, int smin, int smax)
@@ -52,26 +69,49 @@ void game_object_init(game_object_t* obj, int smin, int smax)
 	obj->rotation = rand() % 360;
 }
 
+void ship_init(ship_object* obj) {
+	obj->xpos = 100;
+	obj->ypos = 100;
+	obj->r = (float)rand() / RAND_MAX;
+	obj->g = (float)rand() / RAND_MAX;
+	obj->b = (float)rand() / RAND_MAX;
+	obj->direction = 0;
+	obj->v = 0;
+}
+
 void draw_arena() {
-	printf("draw arena");
 	glColor3f(0, 0, 255);
+	glLineWidth(100);
 
 	glBegin(GL_LINE_LOOP);
-	glPointSize(100);
 	/*glVertex2f(-100, -100);
 	glVertex2f(100, -100);
 	glVertex2f(100, 100);
 	glVertex2f(-100, 100);*/
 
-	glVertex2f(-(g_screen_width / 2), -(g_screen_width / 2));
-	glVertex2f(g_screen_width / 2, -(g_screen_width / 2));
-	glVertex2f(g_screen_width / 2, (g_screen_width / 2));
-	glVertex2f(-(g_screen_width / 2), g_screen_width / 2);
+	glVertex2f(-(g_screen_width / 2), -(g_screen_height / 2));
+	glVertex2f(g_screen_width / 2, -(g_screen_height / 2));
+	glVertex2f(g_screen_width / 2, (g_screen_height / 2));
+	glVertex2f(-(g_screen_width / 2), g_screen_height / 2);
 	glEnd();
 }
 
-void ship_init() {
+void draw_ship() {
+	glPushMatrix();
+	glTranslatef(ship_obj.xpos, ship_obj.ypos, ship_obj.v);
+	glRotatef(-ship_obj.direction,0,0,1);
+	glBegin(GL_TRIANGLE_STRIP);
+	glVertex2f(0, 120); //vertex 1
+	glVertex2f(0, 0); //vertex 2
+	glVertex2f(40, -20); //vertex 3
+	glEnd();
 
+	glBegin(GL_TRIANGLE_STRIP);
+	glVertex2f(0, 120); //vertex 1
+	glVertex2f(0, 0); //vertex 2
+	glVertex2f(-40, -20); //vertex 3
+	glEnd();
+	glPopMatrix();
 }
 
 void on_key_press(unsigned char key, int x, int y)
@@ -80,6 +120,35 @@ void on_key_press(unsigned char key, int x, int y)
 	switch (key) {
 	case KEY_ESC:
 		exit(EXIT_SUCCESS);
+		break;
+	case 'w':
+		moving_forward = true;
+		break;
+	case 'a':
+		turning_left = true;
+		turning_right = false;
+		break;
+	case 'd':
+		turning_left = false;
+		turning_right = true;
+		break;
+	default:
+		break;
+	}
+}
+
+void on_key_release(unsigned char key, int x, int y)
+{
+	fprintf(stderr, "on_key_release()\n");
+	switch (key) {
+	case 'w':
+		moving_forward = false;
+		break;
+	case 'a':
+		turning_left = false;
+		break;
+	case 'd':
+		turning_right = false;
 		break;
 	default:
 		break;
@@ -93,18 +162,20 @@ void on_reshape(int w, int h)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0.0, w, 0.0, h, -1.0, 1.0);
+	glOrtho(-(w / 2), w / 2, -(h /2), h / 2, -1.0, 1.0);
 
 	g_screen_width = w;
 	g_screen_height = h;
 	for (int i = 0; i < NUM_OBJECTS; i++) {
 		game_object_init(&g_game_objects[i], 100, 300);
 	}
+	ship_init(&ship_obj);
 }
 
 void render_frame(game_object_t* go)
 {
 	draw_arena();
+	draw_ship();
 	for (int i = 0; i < NUM_OBJECTS; i++) {
 		glPushMatrix();
 		glTranslatef(go[i].x, go[i].y, 1);
@@ -150,6 +221,18 @@ void update_game_state(game_object_t* go, float dt)
 			go[i].x = new_x;
 		}
 	}
+	if (moving_forward) {
+		//ship_obj.ypos += 1;
+		ship_obj.xpos += sin(M_PI * ship_obj.direction / 180);
+		ship_obj.ypos += cos(M_PI * ship_obj.direction / 180);
+	}
+	if (turning_left) {
+		ship_obj.direction--;
+	}
+	if (turning_right) {
+		ship_obj.direction++;
+	}
+	//printf("angle: " + ship_obj.direction);
 }
 
 void on_idle()
@@ -169,6 +252,8 @@ void init_app(int* argcp, char** argv)
 	glutFullScreen();
 	glutReshapeFunc(on_reshape);
 	glutKeyboardFunc(on_key_press);
+	glutKeyboardUpFunc(on_key_release);
+	glutSetKeyRepeat(GLUT_KEY_REPEAT_OFF);
 
 	glutDisplayFunc(on_display);
 	glutIdleFunc(on_idle);
