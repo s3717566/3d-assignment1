@@ -31,6 +31,9 @@ boolean turning_right = false;
 #define ROTATEDELTA 2
 
 #define M_PI 3.14159265358979323846
+#define CIRCLE_POINTS 100
+
+#define SHIP_HITBOX_RADIUS 20
 
 // DO NOT name your members like this!
 typedef struct {
@@ -44,16 +47,26 @@ typedef struct {
 
 typedef struct {
 	//int s;           // size
-	float xpos, ypos;      // position
+	float xpos, ypos, oldxpos, oldypos;      // position
 	float r, g, b;   // colour
 	float direction;         // direction facing (out of 360 degrees)
 	int v;           // velocity in pixels per second
 	float rotation;
 } ship_object;
 
+typedef struct {
+	float xpos, ypos;
+} coord;
+
+typedef struct {
+	coord upper[CIRCLE_POINTS + 1];
+	coord lower[CIRCLE_POINTS + 1];
+} circle_coord_array;
+
 #define NUM_OBJECTS 1
 game_object_t g_game_objects[NUM_OBJECTS];
 ship_object ship_obj;
+circle_coord_array ship_hitbox_circle;
 
 
 void game_object_init(game_object_t* obj, int smin, int smax)
@@ -72,6 +85,8 @@ void game_object_init(game_object_t* obj, int smin, int smax)
 void ship_init(ship_object* obj) {
 	obj->xpos = 100;
 	obj->ypos = 100;
+	obj->oldxpos = 100;
+	obj->oldypos = 100;
 	obj->r = (float)rand() / RAND_MAX;
 	obj->g = (float)rand() / RAND_MAX;
 	obj->b = (float)rand() / RAND_MAX;
@@ -99,7 +114,7 @@ void draw_arena() {
 void draw_ship() {
 	glPushMatrix();
 	glTranslatef(ship_obj.xpos, ship_obj.ypos, ship_obj.v);
-	glRotatef(-ship_obj.direction,0,0,1);
+	glRotatef(-ship_obj.direction, 0, 0, 1);
 	glBegin(GL_TRIANGLE_STRIP);
 	glVertex2f(0, 120); //vertex 1
 	glVertex2f(0, 0); //vertex 2
@@ -112,6 +127,72 @@ void draw_ship() {
 	glVertex2f(-40, -20); //vertex 3
 	glEnd();
 	glPopMatrix();
+}
+
+void arena_warning() {
+
+}
+
+void check_ship_collision(int dist) {
+	//dist is distance between ship and collision object - 0 would mean collision
+
+}
+
+void initialise_circle(float radius, circle_coord_array* cca, float initialX, float initialY) {
+
+	printf("Initialised hitbox");
+
+	float x, y;
+
+	for (int i = 0; i < CIRCLE_POINTS; i++) {
+		x =  ((i / (float)CIRCLE_POINTS - 0.5) * 2.0) * radius;
+		y =  sqrt(radius * radius - x * x);
+		//printf("x y: %f %f\n", x, y);
+		//glVertex2f(x, y);
+		cca->upper[i].xpos = x + initialX;
+		cca->upper[i].ypos = y + initialY;
+		printf("%i proper: x y: %f %f\n", i, x, y);
+		printf("x y: %f %f\n", cca->upper[i].xpos, cca->upper[i].ypos);
+	}
+
+	for (int i = CIRCLE_POINTS; i > 0; i--) {
+		x = (i / (float)CIRCLE_POINTS - 0.5) * 2.0 * radius;
+		y = -sqrt(radius * radius - x * x);
+		//glVertex2f(x, y);
+		cca->lower[i].xpos = x + initialX;
+		cca->lower[i].ypos = y + initialY;
+		printf("%i proper: x y: %f %f\n", i, x, y);
+		printf("x y: %f %f\n", cca->lower[i].xpos, cca->lower[i].ypos);
+	}
+}
+
+void draw_circle(circle_coord_array* cca) {
+	printf("drawing");
+	glColor3f(1.0, 1.0, 1.0);
+	glLineWidth(2.0);
+	glBegin(GL_LINE_LOOP);
+	for (int i = 0; i < CIRCLE_POINTS; i++) {
+		glVertex2f(cca->upper[i].xpos, cca->upper[i].ypos);
+		printf("draw: %i proper: x y: %f %f\n", i, cca->upper[i].xpos, cca->upper[i].ypos);
+	}
+
+	for (int i = CIRCLE_POINTS; i > 0; i--) {
+		glVertex2f(cca->lower[i].xpos, cca->lower[i].ypos);
+		printf("draw: %i proper: x y: %f %f\n", i, cca->lower[i].xpos, cca->lower[i].ypos);
+	}
+	glEnd();
+}
+
+void move_circle(circle_coord_array* cca, float newX, float newY) {
+	for (int i = 0; i < CIRCLE_POINTS; i++) {
+		cca->upper[i].xpos = cca->upper[i].xpos - newX;
+		cca->upper[i].ypos = cca->upper[i].ypos - newY;
+	}
+
+	for (int i = CIRCLE_POINTS; i > 0; i--) {
+		cca->lower[i].xpos = cca->lower[i].xpos - newX;
+		cca->lower[i].ypos = cca->lower[i].ypos - newY;
+	}
 }
 
 void on_key_press(unsigned char key, int x, int y)
@@ -162,7 +243,7 @@ void on_reshape(int w, int h)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-(w / 2), w / 2, -(h /2), h / 2, -1.0, 1.0);
+	glOrtho(-(w / 2), w / 2, -(h / 2), h / 2, -1.0, 1.0);
 
 	g_screen_width = w;
 	g_screen_height = h;
@@ -170,12 +251,17 @@ void on_reshape(int w, int h)
 		game_object_init(&g_game_objects[i], 100, 300);
 	}
 	ship_init(&ship_obj);
+	initialise_circle(100, &ship_hitbox_circle, ship_obj.xpos, ship_obj.ypos + 40);
+	draw_circle(&ship_hitbox_circle);
 }
 
 void render_frame(game_object_t* go)
 {
 	draw_arena();
 	draw_ship();
+	draw_circle(&ship_hitbox_circle);
+	move_circle(&ship_hitbox_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos);
+
 	for (int i = 0; i < NUM_OBJECTS; i++) {
 		glPushMatrix();
 		glTranslatef(go[i].x, go[i].y, 1);
@@ -221,8 +307,10 @@ void update_game_state(game_object_t* go, float dt)
 			go[i].x = new_x;
 		}
 	}
+	ship_obj.oldxpos = ship_obj.xpos;
+	ship_obj.oldypos = ship_obj.ypos;
+
 	if (moving_forward) {
-		//ship_obj.ypos += 1;
 		ship_obj.xpos += sin(M_PI * ship_obj.direction / 180);
 		ship_obj.ypos += cos(M_PI * ship_obj.direction / 180);
 	}
