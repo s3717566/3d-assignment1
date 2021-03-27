@@ -67,6 +67,12 @@ typedef struct {
 game_object_t g_game_objects[NUM_OBJECTS];
 ship_object ship_obj;
 circle_coord_array ship_hitbox_circle;
+circle_coord_array ship_warning_circle;
+
+float red, green = 0;
+float blue = 1;
+
+bool warning = false;
 
 
 void game_object_init(game_object_t* obj, int smin, int smax)
@@ -95,7 +101,8 @@ void ship_init(ship_object* obj) {
 }
 
 void draw_arena() {
-	glColor3f(0, 0, 255);
+	glPushMatrix();
+	glColor3f(red, green, blue);
 	glLineWidth(100);
 
 	glBegin(GL_LINE_LOOP);
@@ -109,6 +116,7 @@ void draw_arena() {
 	glVertex2f(g_screen_width / 2, (g_screen_height / 2));
 	glVertex2f(-(g_screen_width / 2), g_screen_height / 2);
 	glEnd();
+	glPopMatrix();
 }
 
 void draw_ship() {
@@ -129,11 +137,50 @@ void draw_ship() {
 	glPopMatrix();
 }
 
-void arena_warning() {
+void arena_warning(circle_coord_array* cca) {
+	if (!warning) {
+		for (int i = 0; i < CIRCLE_POINTS; i++) {
+			if (cca->upper[i].xpos > g_screen_width / 2
+				|| cca->upper[i].xpos < -(g_screen_width / 2)
+				|| cca->upper[i].ypos > g_screen_height / 2) {
+				warning = true;
+			}
+		}
 
+		for (int i = CIRCLE_POINTS; i > 0; i--) {
+			if (cca->lower[i].ypos < -(g_screen_height / 2)) {
+				warning = true;
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < CIRCLE_POINTS; i++) {
+			if (cca->upper->xpos < g_screen_width / 2
+				&& cca->upper->xpos > -(g_screen_width / 2)
+				&& cca->upper->ypos < g_screen_height / 2) {
+				warning = false;
+			}
+		}
+
+		for (int i = CIRCLE_POINTS; i > 0; i--) {
+			if (cca->lower->ypos > -(g_screen_height / 2)) {
+				warning = false;
+			}
+		}
+	}
+	if (warning) {
+		red = 1;
+		blue = 0;
+		green = 0;
+	}
+	else {
+		red = 0;
+		blue = 1;
+		green = 0;
+	}
 }
 
-void check_ship_collision(int dist) {
+void check_ship_collision(circle_coord_array* cca) {
 	//dist is distance between ship and collision object - 0 would mean collision
 
 }
@@ -145,14 +192,14 @@ void initialise_circle(float radius, circle_coord_array* cca, float initialX, fl
 	float x, y;
 
 	for (int i = 0; i < CIRCLE_POINTS; i++) {
-		x =  ((i / (float)CIRCLE_POINTS - 0.5) * 2.0) * radius;
-		y =  sqrt(radius * radius - x * x);
+		x = ((i / (float)CIRCLE_POINTS - 0.5) * 2.0) * radius;
+		y = sqrt(radius * radius - x * x);
 		//printf("x y: %f %f\n", x, y);
 		//glVertex2f(x, y);
 		cca->upper[i].xpos = x + initialX;
 		cca->upper[i].ypos = y + initialY;
-		printf("%i proper: x y: %f %f\n", i, x, y);
-		printf("x y: %f %f\n", cca->upper[i].xpos, cca->upper[i].ypos);
+		//printf("%i proper: x y: %f %f\n", i, x, y);
+		//printf("x y: %f %f\n", cca->upper[i].xpos, cca->upper[i].ypos);
 	}
 
 	for (int i = CIRCLE_POINTS; i > 0; i--) {
@@ -161,24 +208,24 @@ void initialise_circle(float radius, circle_coord_array* cca, float initialX, fl
 		//glVertex2f(x, y);
 		cca->lower[i].xpos = x + initialX;
 		cca->lower[i].ypos = y + initialY;
-		printf("%i proper: x y: %f %f\n", i, x, y);
-		printf("x y: %f %f\n", cca->lower[i].xpos, cca->lower[i].ypos);
+		//printf("%i proper: x y: %f %f\n", i, x, y);
+		//printf("x y: %f %f\n", cca->lower[i].xpos, cca->lower[i].ypos);
 	}
 }
 
 void draw_circle(circle_coord_array* cca) {
-	printf("drawing");
+	//printf("drawing");
 	glColor3f(1.0, 1.0, 1.0);
 	glLineWidth(2.0);
 	glBegin(GL_LINE_LOOP);
 	for (int i = 0; i < CIRCLE_POINTS; i++) {
 		glVertex2f(cca->upper[i].xpos, cca->upper[i].ypos);
-		printf("draw: %i proper: x y: %f %f\n", i, cca->upper[i].xpos, cca->upper[i].ypos);
+		//printf("draw: %i proper: x y: %f %f\n", i, cca->upper[i].xpos, cca->upper[i].ypos);
 	}
 
 	for (int i = CIRCLE_POINTS; i > 0; i--) {
 		glVertex2f(cca->lower[i].xpos, cca->lower[i].ypos);
-		printf("draw: %i proper: x y: %f %f\n", i, cca->lower[i].xpos, cca->lower[i].ypos);
+		//printf("draw: %i proper: x y: %f %f\n", i, cca->lower[i].xpos, cca->lower[i].ypos);
 	}
 	glEnd();
 }
@@ -252,6 +299,7 @@ void on_reshape(int w, int h)
 	}
 	ship_init(&ship_obj);
 	initialise_circle(100, &ship_hitbox_circle, ship_obj.xpos, ship_obj.ypos + 40);
+	initialise_circle(300, &ship_warning_circle, ship_obj.xpos, ship_obj.ypos + 40);
 	draw_circle(&ship_hitbox_circle);
 }
 
@@ -260,7 +308,10 @@ void render_frame(game_object_t* go)
 	draw_arena();
 	draw_ship();
 	draw_circle(&ship_hitbox_circle);
+	draw_circle(&ship_warning_circle);
 	move_circle(&ship_hitbox_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos);
+	move_circle(&ship_warning_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos);
+	arena_warning(&ship_warning_circle);
 
 	for (int i = 0; i < NUM_OBJECTS; i++) {
 		glPushMatrix();
