@@ -32,7 +32,7 @@ boolean turning_right = false;
 
 #define M_PI 3.14159265358979323846
 #define CIRCLE_POINTS 100
-#define MAX_ASTEROID_LIMIT 5
+#define MAX_ASTEROID_LIMIT 10
 
 #define SHIP_HITBOX_RADIUS 20
 
@@ -90,12 +90,14 @@ circle_coord_array ship_warning_circle;
 circle_coord_array asteroid_spawning_circle;
 int active_asteroids_count = 0;
 int frames_until_next_wave = 0;
-int wave_number = 5;
+int wave_number = 0;
 
 float red, green = 0;
 float blue = 1;
 
-bool warning = false;
+boolean warning = false;
+boolean round_over = false;
+int asteroids_left = 0;
 
 void game_object_init(game_object_t* obj, int smin, int smax);
 void ship_init(ship_object* obj);
@@ -170,15 +172,15 @@ void draw_ship() {
 	glTranslatef(ship_obj.xpos, ship_obj.ypos, ship_obj.v);
 	glRotatef(-ship_obj.direction, 0, 0, 1);
 	glBegin(GL_TRIANGLE_STRIP);
-	glVertex2f(0, 120);
+	glVertex2f(0, 110);
 	glVertex2f(0, 0);
-	glVertex2f(40, -20);
+	glVertex2f(50, -20);
 	glEnd();
 
 	glBegin(GL_TRIANGLE_STRIP);
-	glVertex2f(0, 120);
+	glVertex2f(0, 110);
 	glVertex2f(0, 0);
-	glVertex2f(-40, -20);
+	glVertex2f(-50, -20);
 	glEnd();
 	glPopMatrix();
 }
@@ -240,7 +242,7 @@ void initialise_asteroid(asteroid* asteroid_in) {
 
 	//deciding where to spawn on the spawn circle
 	float x, y = 0;
-	if (rand() % 1 == 0) {
+	if (rand() % 2 == 0) {
 		//upper hemisphere
 		int index = rand() % 99;
 		x = asteroid_spawning_circle.upper[index].xpos;
@@ -269,10 +271,19 @@ void initialise_asteroid(asteroid* asteroid_in) {
 }
 
 void asteroid_controller() {
-	if (active_asteroids_count == 0) {
+	int temp = 0;
+	for (int i = 0; i < active_asteroids_count; i++) {
+		if (active_asteroids[i].active == true) {
+			temp++;
+		}
+	}
+
+
+	if (temp == 0) {
 		if (frames_until_next_wave <= 0) {
 			//start wave
 			wave_number++;
+			active_asteroids_count = 0;
 			printf("launching wave %i", wave_number);
 
 			for (int i = 0; i < wave_number && i < MAX_ASTEROID_LIMIT; i++) {
@@ -292,8 +303,7 @@ void asteroid_controller() {
 	draw_circle(&asteroid_spawning_circle);
 
 	for (int i = 0; i < active_asteroids_count; i++) {
-		printf(active_asteroids[i].active);
-		if (&active_asteroids[i].active == true) {
+		if (active_asteroids[i].active == true) {
 			asteroid_movement(&active_asteroids[i]);
 			draw_circle(&active_asteroids[i].outline);
 			move_circle(&active_asteroids[i].outline, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos);
@@ -310,7 +320,7 @@ boolean asteroid_death_check(asteroid* ast) {
 	{
 		printf("Boom... asteroid destroyed at %f, %f, width: %i, height: %i", ast->pos.xpos, ast->pos.ypos, g_screen_width, g_screen_height);
 
-		//active_asteroids_count--;
+		asteroids_left--;
 		ast->active = false;
 		return true;
 	}
@@ -424,13 +434,16 @@ void on_reshape(int w, int h)
 	glLoadIdentity();
 	glOrtho(-(w / 2), w / 2, -(h / 2), h / 2, -1.0, 1.0);
 
+	//set time as seed for rand()
+	srand((unsigned)time(0));
 
-	for (int i = 0; i < NUM_OBJECTS; i++) {
+
+	/*for (int i = 0; i < NUM_OBJECTS; i++) {
 		game_object_init(&g_game_objects[i], 100, 300);
-	}
+	}*/
 	ship_init(&ship_obj);
-	initialise_circle(80, &ship_hitbox_circle, ship_obj.xpos, ship_obj.ypos + 20);
-	initialise_circle(300, &ship_warning_circle, ship_obj.xpos, ship_obj.ypos + 20);
+	initialise_circle(60, &ship_hitbox_circle, ship_obj.xpos, ship_obj.ypos);
+	initialise_circle(300, &ship_warning_circle, ship_obj.xpos, ship_obj.ypos);
 	initialise_circle(600, &asteroid_spawning_circle, 0, 0); //default: 1500
 	draw_circle(&ship_hitbox_circle);
 	//initialise_asteroid(&active_asteroids[0]);
