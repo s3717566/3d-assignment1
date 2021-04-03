@@ -6,11 +6,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\main.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="..\src\main.c">
       <Filter>src</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\src\main.h" />
   </ItemGroup>
 </Project>

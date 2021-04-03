@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
+#include <time.h>
 
 #if _WIN32
 # include <windows.h>
@@ -32,13 +33,16 @@ boolean turning_right = false;
 
 #define M_PI 3.14159265358979323846
 #define CIRCLE_POINTS 100
+#define ASTEROID_POINTS 20
 #define MAX_ASTEROID_LIMIT 10
-
 #define SHIP_HITBOX_RADIUS 20
-
 #define SPEED_MULTIPLIER 4
-
 #define SECONDS_BETWEEN_WAVES 10;
+int SHIP_HITBOX_SIZE = 60;
+int SHIP_EDGE_WARNING_SIZE = 200;
+int ASTEROID_MIN_SIZE = 20;
+int ASTEROID_MAX_SIZE = 80;
+int ASTEROID_SPAWN_RADIUS = 500;
 
 
 // DO NOT name your members like this!
@@ -73,6 +77,7 @@ typedef struct {
 	coord pos;
 	coord oldpos;
 	circle_coord_array outline;
+	circle_coord_array outline_visual;
 	float direction;
 	float velocity_multiplier;
 	float radius;
@@ -107,9 +112,9 @@ void arena_warning(circle_coord_array* cca);
 void check_collision(circle_coord_array* cca1, circle_coord_array* cca2);
 void initialise_asteroid(asteroid* asteroid_in);
 void asteroid_controller();
-void initialise_circle(float radius, circle_coord_array* cca, float initialX, float initialY);
-void draw_circle(circle_coord_array* cca);
-void move_circle(circle_coord_array* cca, float DistTravelledX, float DistTravelledY);
+void initialise_circle(float radius, circle_coord_array* cca, float initialX, float initialY, int circle_points, boolean make_random);
+void draw_circle(circle_coord_array* cca, int circle_points);
+void move_circle(circle_coord_array* cca, float DistTravelledX, float DistTravelledY, int circle_points);
 void on_key_press(unsigned char key, int x, int y);
 void on_key_release(unsigned char key, int x, int y);
 void on_reshape(int w, int h);
@@ -124,9 +129,10 @@ void on_idle();
 void init_app(int* argcp, char** argv);
 int main(int argc, char** argv);
 boolean asteroid_death_check(asteroid* ast);
+boolean arena_border_collision(circle_coord_array* cca);
+boolean death_check(circle_coord_array* cca);
 
-
-void game_object_init(game_object_t* obj, int smin, int smax)
+	void game_object_init(game_object_t * obj, int smin, int smax)
 {
 	obj->s = smin + (rand() % (smax - smin));
 	obj->x = rand() % (g_screen_width - obj->s) + obj->s / 2;
@@ -186,37 +192,8 @@ void draw_ship() {
 }
 
 void arena_warning(circle_coord_array* cca) {
-	if (!warning) {
-		for (int i = 0; i < CIRCLE_POINTS; i++) {
-			if (cca->upper[i].xpos > g_screen_width / 2
-				|| cca->upper[i].xpos < -(g_screen_width / 2)
-				|| cca->upper[i].ypos > g_screen_height / 2) {
-				warning = true;
-			}
-		}
-
-		for (int i = CIRCLE_POINTS; i > 0; i--) {
-			if (cca->lower[i].ypos < -(g_screen_height / 2)) {
-				warning = true;
-			}
-		}
-	}
-	else {
-		for (int i = 0; i < CIRCLE_POINTS; i++) {
-			if (cca->upper->xpos < g_screen_width / 2
-				&& cca->upper->xpos > -(g_screen_width / 2)
-				&& cca->upper->ypos < g_screen_height / 2) {
-				warning = false;
-			}
-		}
-
-		for (int i = CIRCLE_POINTS; i > 0; i--) {
-			if (cca->lower->ypos > -(g_screen_height / 2)) {
-				warning = false;
-			}
-		}
-	}
-	if (warning) {
+	if (arena_border_collision(cca))
+	{
 		red = 1;
 		blue = 0;
 		green = 0;
@@ -228,6 +205,39 @@ void arena_warning(circle_coord_array* cca) {
 	}
 }
 
+boolean arena_border_collision(circle_coord_array* cca)
+{
+	boolean collided = false;
+	for (int i = 0; i < CIRCLE_POINTS; i++) {
+		if (cca->upper[i].xpos > g_screen_width / 2
+			|| cca->upper[i].xpos < -(g_screen_width / 2)
+			|| cca->upper[i].ypos > g_screen_height / 2) {
+			collided = true;
+		}
+	}
+
+	for (int i = CIRCLE_POINTS; i > 0; i--) {
+		if (cca->lower[i].ypos < -(g_screen_height / 2)) {
+			collided = true;
+		}
+	}
+	return collided;
+}
+
+boolean death_check(circle_coord_array* cca)
+{
+	if (arena_border_collision(cca))
+	{
+		return true;
+	}
+}
+
+void ship_death()
+{
+	printf("you have died.");
+	
+}
+
 void check_collision(circle_coord_array* cca1, circle_coord_array* cca2) {
 
 
@@ -235,8 +245,8 @@ void check_collision(circle_coord_array* cca1, circle_coord_array* cca2) {
 
 void initialise_asteroid(asteroid* asteroid_in) {
 	printf("initialised asteroid\n");
-	asteroid_in->radius = 20 + rand() % 100;
-	asteroid_in->velocity_multiplier = 0.1 + (rand() % 30 * 0.1);
+	asteroid_in->radius = ASTEROID_MIN_SIZE + rand() % ASTEROID_MAX_SIZE;
+	asteroid_in->velocity_multiplier = 0.3 + (rand() % 30 * 0.1);
 	asteroid_in->spawn_protection = 500;
 	asteroid_in->active = true;
 
@@ -267,7 +277,8 @@ void initialise_asteroid(asteroid* asteroid_in) {
 	asteroid_in->direction = -90 + -direction_rad * (180 / M_PI);
 	active_asteroids_count++;
 
-	initialise_circle(asteroid_in->radius, &asteroid_in->outline, x, y);
+	initialise_circle(asteroid_in->radius, &asteroid_in->outline, x, y, CIRCLE_POINTS, false);
+	initialise_circle(asteroid_in->radius, &asteroid_in->outline_visual, x, y, ASTEROID_POINTS, true);
 }
 
 void asteroid_controller() {
@@ -300,13 +311,17 @@ void asteroid_controller() {
 	}
 
 	//debug - does not need to be drawn
-	draw_circle(&asteroid_spawning_circle);
 
 	for (int i = 0; i < active_asteroids_count; i++) {
 		if (active_asteroids[i].active == true) {
 			asteroid_movement(&active_asteroids[i]);
-			draw_circle(&active_asteroids[i].outline);
-			move_circle(&active_asteroids[i].outline, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos);
+			
+			move_circle(&active_asteroids[i].outline_visual, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, ASTEROID_POINTS);
+			move_circle(&active_asteroids[i].outline, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, CIRCLE_POINTS);
+
+			draw_circle(&active_asteroids[i].outline_visual, ASTEROID_POINTS);
+			//draw_circle(&active_asteroids[i].outline, CIRCLE_POINTS);
+			
 			asteroid_death_check(&active_asteroids[i]);
 		}
 	}
@@ -332,50 +347,64 @@ void asteroid_to_string(asteroid* ast) {
 	printf("\nradius: %f\nxpos: %f, ypos: %f\nvelocity: %f\ndirection: %f\n", ast->radius, ast->pos.xpos, ast->pos.ypos, ast->velocity_multiplier, ast->direction);
 }
 
-void initialise_circle(float radius, circle_coord_array* cca, float initialX, float initialY) {
+void initialise_circle(float radius, circle_coord_array* cca, float initialX, float initialY, int circle_points, boolean make_random) {
 
-	printf("Initialised hitbox");
+	printf("Initialised circle shape");
 
 	float x, y;
-
+	float randomnessX = 0;
+	float randomnessY = 0;
 	//top semicircle
-	for (int i = 0; i < CIRCLE_POINTS; i++) {
-		x = ((i / (float)CIRCLE_POINTS - 0.5) * 2.0) * radius;
-		y = sqrt(radius * radius - x * x);
+	for (int i = 0; i < circle_points; i++) {
+		if (make_random)
+		{
+			randomnessX = 10.0 - (rand() % 100 * 0.1);
+			randomnessY = 10.0 - (rand() % 100 * 0.1);
+		}
+		
+		x = ((i / (float)circle_points - 0.5) * 2.0) * radius + randomnessX;
+		y = sqrt(radius * radius - x * x) + randomnessY;
 		cca->upper[i].xpos = x + initialX;
 		cca->upper[i].ypos = y + initialY;
 	}
 
 	//bottom semicircle
-	for (int i = CIRCLE_POINTS; i > 0; i--) {
-		x = (i / (float)CIRCLE_POINTS - 0.5) * 2.0 * radius;
-		y = -sqrt(radius * radius - x * x);
+	for (int i = circle_points; i > 0; i--) {
+		if (make_random)
+		{
+			randomnessX = 5.0 - (rand() % 100 * 0.1);
+			randomnessY = 5.0 - (rand() % 100 * 0.1);
+		}
+		x = (i / (float)circle_points - 0.5) * 2.0 * radius + randomnessX;
+		y = -sqrt(radius * radius - x * x) + randomnessY;
 		cca->lower[i].xpos = x + initialX;
 		cca->lower[i].ypos = y + initialY;
 	}
 }
 
-void draw_circle(circle_coord_array* cca) {
+void draw_circle(circle_coord_array* cca, int circle_points) {
+
 	glColor3f(1.0, 1.0, 1.0);
 	glLineWidth(2.0);
 	glBegin(GL_LINE_LOOP);
-	for (int i = 0; i < CIRCLE_POINTS; i++) {
+	for (int i = 0; i < circle_points; i++) {
 		glVertex2f(cca->upper[i].xpos, cca->upper[i].ypos);
 	}
 
-	for (int i = CIRCLE_POINTS; i > 0; i--) {
+	for (int i = circle_points; i > 0; i--) {
 		glVertex2f(cca->lower[i].xpos, cca->lower[i].ypos);
 	}
 	glEnd();
 }
 
-void move_circle(circle_coord_array* cca, float DistTravelledX, float DistTravelledY) {
-	for (int i = 0; i < CIRCLE_POINTS; i++) {
+void move_circle(circle_coord_array* cca, float DistTravelledX, float DistTravelledY, int circle_points) {
+		
+	for (int i = 0; i < circle_points; i++) {
 		cca->upper[i].xpos = cca->upper[i].xpos - DistTravelledX;
 		cca->upper[i].ypos = cca->upper[i].ypos - DistTravelledY;
 	}
 
-	for (int i = CIRCLE_POINTS; i > 0; i--) {
+	for (int i = circle_points; i > 0; i--) {
 		cca->lower[i].xpos = cca->lower[i].xpos - DistTravelledX;
 		cca->lower[i].ypos = cca->lower[i].ypos - DistTravelledY;
 	}
@@ -438,30 +467,30 @@ void on_reshape(int w, int h)
 	srand((unsigned)time(0));
 
 
-	/*for (int i = 0; i < NUM_OBJECTS; i++) {
-		game_object_init(&g_game_objects[i], 100, 300);
-	}*/
+	//TODO: move this to new function so game can restart
 	ship_init(&ship_obj);
-	initialise_circle(60, &ship_hitbox_circle, ship_obj.xpos, ship_obj.ypos);
-	initialise_circle(300, &ship_warning_circle, ship_obj.xpos, ship_obj.ypos);
-	initialise_circle(600, &asteroid_spawning_circle, 0, 0); //default: 1500
-	draw_circle(&ship_hitbox_circle);
-	//initialise_asteroid(&active_asteroids[0]);
-	//initialise_circle(active_asteroids[0].radius, &active_asteroids[0].outline, active_asteroids[0].pos.xpos, active_asteroids[0].pos.ypos);
+	initialise_circle(SHIP_HITBOX_SIZE, &ship_hitbox_circle, ship_obj.xpos, ship_obj.ypos, CIRCLE_POINTS, false);
+	initialise_circle(SHIP_EDGE_WARNING_SIZE, &ship_warning_circle, ship_obj.xpos, ship_obj.ypos, CIRCLE_POINTS, false);
+	initialise_circle(ASTEROID_SPAWN_RADIUS, &asteroid_spawning_circle, 0, 0, CIRCLE_POINTS, false); //default: 1500
+	draw_circle(&asteroid_spawning_circle, false);
+
 }
 
 void ship_controller() {
 	draw_ship();
-	draw_circle(&ship_hitbox_circle);
-	move_circle(&ship_hitbox_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos);
+	move_circle(&ship_hitbox_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos, CIRCLE_POINTS);
 
-	draw_circle(&ship_warning_circle);
-	move_circle(&ship_warning_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos);
+	move_circle(&ship_warning_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos, CIRCLE_POINTS);
 
 	//wide radius around ship for warning near border
 	arena_warning(&ship_warning_circle);
 	//debug
-	draw_circle(&ship_warning_circle);
+	draw_circle(&ship_hitbox_circle, CIRCLE_POINTS);
+	draw_circle(&ship_warning_circle, CIRCLE_POINTS);
+
+	if (death_check(&ship_hitbox_circle)) {
+		ship_death();
+	}
 }
 
 void on_display()
@@ -492,7 +521,6 @@ void update_game_state(game_object_t* go, float dt)
 			go[i].x = new_x;
 		}
 	}
-
 }
 
 void ship_movement() {
@@ -529,6 +557,11 @@ void render_frame(game_object_t* go)
 
 	ship_controller();
 	asteroid_controller();
+}
+
+void initialise_game()
+{
+	
 }
 
 void on_idle()
