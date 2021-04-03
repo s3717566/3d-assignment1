@@ -6,10 +6,48 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\main.h" />
+    <ClInclude Include="displayController.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\main.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\shipController.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\circle.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\essentials.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\arenaController.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\asteroidController.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\shipAsteroidConnection.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\displayController.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\shipController.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\circle.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\arenaController.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\asteroidController.c">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
