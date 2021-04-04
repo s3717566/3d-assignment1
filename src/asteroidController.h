@@ -2,6 +2,7 @@
 #include "essentials.h"
 #include "displayController.h"
 #include "shipController.h"
+#include "arenaController.h"
 
 typedef struct {
 	coord pos;
@@ -21,15 +22,6 @@ typedef struct {
 #define SECONDS_BETWEEN_WAVES 10;
 
 asteroid active_asteroids[MAX_ASTEROID_LIMIT];
-
-int ASTEROID_MIN_SIZE = 60;
-int ASTEROID_MAX_SIZE = 120;
-int ASTEROID_SPAWN_RADIUS = 1500;
-
-circle_coord_array asteroid_spawning_circle;
-int active_asteroids_count = 0;
-int frames_until_next_wave = 0;
-int wave_number = 0;
 
 void initialise_asteroid_controller();
 void asteroid_controller();

@@ -1,5 +1,14 @@
 #include "asteroidController.h"
 
+int ASTEROID_MIN_SIZE = 60;
+int ASTEROID_MAX_SIZE = 120;
+int ASTEROID_SPAWN_RADIUS = 1500;
+
+circle_coord_array asteroid_spawning_circle;
+int active_asteroids_count = 0;
+int frames_until_next_wave = 0;
+int wave_number = 0;
+
 void initialise_asteroid_controller()
 {
 	initialise_circle(ASTEROID_SPAWN_RADIUS, &asteroid_spawning_circle, 0, 0, CIRCLE_POINTS, false); //default: 1500
@@ -107,10 +116,8 @@ void asteroid_controller() {
 }
 
 bool asteroid_out_of_bounds_check(asteroid* ast) {
-	if (ast->spawn_protection <= 0 && ((ast->pos.xpos - ast->radius > g_screen_width / 2) //right side
-		|| (ast->pos.xpos + ast->radius < -(g_screen_width / 2)) //left side
-		|| (ast->pos.ypos - ast->radius > g_screen_height / 2) //top side
-		|| (ast->pos.ypos + ast->radius < -(g_screen_height / 2)))) //bottom side 
+	if (ast->spawn_protection <= 0)
+		if (out_of_bounds(ast->pos.xpos, ast->pos.ypos, ast->radius))
 	{
 		printf("Boom... asteroid destroyed at %f, %f, width: %i, height: %i", ast->pos.xpos, ast->pos.ypos, g_screen_width, g_screen_height);
 

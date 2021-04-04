@@ -23,16 +23,15 @@ void initialise_ship_circles();
 void ship_death();
 bool death_check(circle_coord_array* cca);
 
-bool moving_forward;
-bool turning_left;
-bool turning_right;
+extern bool moving_forward;
+extern bool turning_left;
+extern bool turning_right;
 
 ship_object ship_obj;
 circle_coord_array ship_hitbox_circle;
 circle_coord_array ship_warning_circle;
 
-int SHIP_HITBOX_SIZE = 60;
-int SHIP_EDGE_WARNING_SIZE = 200;
+
 
 
 

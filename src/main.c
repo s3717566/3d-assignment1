@@ -1,6 +1,5 @@
 #include "displayController.h"
 #include "shipController.h"
-#include "circle.h"
 #include "essentials.h"
 #include "asteroidController.h"
 
@@ -18,8 +17,6 @@
 #endif
 
 #define KEY_ESC 27
-
-float g_last_time = 0.0;
 
 #define MOVING_RIGHT 1
 #define MOVING_LEFT  -1
@@ -140,10 +137,10 @@ void initialise_game()
 void on_idle()
 {
 	float cur_time = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
-	float dt = cur_time - g_last_time;
+	//float dt = cur_time - g_last_time;
 	//update_game_state(g_game_objects, dt);
 	//asteroid_movement(&active_asteroids[0]);
-	g_last_time = cur_time;
+	//g_last_time = cur_time;
 	glutPostRedisplay();
 }
 
@@ -161,7 +158,7 @@ void init_app(int* argcp, char** argv)
 	glutDisplayFunc(on_display);
 	glutIdleFunc(on_idle);
 
-	g_last_time = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
+	//g_last_time = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
 	// *** DO NOT call game_object_init() here. WHY?
 }
 

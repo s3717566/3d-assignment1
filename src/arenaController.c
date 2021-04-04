@@ -18,3 +18,12 @@ bool arena_border_collision(circle_coord_array* cca)
 	}
 	return collided;
 }
+
+bool out_of_bounds(float x, float y, float radius)
+{
+	return
+		((x - radius > g_screen_width / 2) //right side
+			|| (x + radius < -(g_screen_width / 2)) //left side
+			|| (x - radius > g_screen_height / 2) //top side
+			|| (y + radius < -(g_screen_height / 2))); //bottom side 
+}

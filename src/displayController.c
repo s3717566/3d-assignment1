@@ -17,6 +17,8 @@
 
 float red, green = 0;
 float blue = 1;
+int g_screen_width = 0;
+int g_screen_height = 0;
 
 void draw_arena(int screen_width, int screen_height) {
 	glPushMatrix();

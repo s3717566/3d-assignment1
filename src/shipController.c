@@ -1,5 +1,12 @@
 #include "shipController.h"
 
+bool moving_forward = false;
+bool turning_left = false;
+bool turning_right = false;
+
+int SHIP_HITBOX_SIZE = 60;
+int SHIP_EDGE_WARNING_SIZE = 200;
+
 void ship_controller() {
 	draw_ship(ship_obj.xpos, ship_obj.ypos, ship_obj.v, ship_obj.direction);
 	ship_movement();
@@ -21,8 +28,6 @@ void ship_controller() {
 	//debug
 	draw_circle(&ship_hitbox_circle, CIRCLE_POINTS);
 	draw_circle(&ship_warning_circle, CIRCLE_POINTS);
-
-	
 
 	if (death_check(&ship_hitbox_circle)) {
 		ship_death();
