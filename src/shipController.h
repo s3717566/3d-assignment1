@@ -6,11 +6,14 @@
 
 #define SPEED_MULTIPLIER 4
 #define SHIP_HITBOX_RADIUS 20
-#define MAX_PARTICLES 20
+#define MAX_PARTICLES 50
 #define PARTICLE_INITIAL_SIZE 10
 #define PARTICLE_LIFESPAN 100
-#define PARTICLE_SPEED_MULTIPLIER 1
-#define PARTICLE_FREQUENCY 5
+#define PARTICLE_SPEED_MULTIPLIER 2
+#define PARTICLE_FREQUENCY 10
+#define MAX_BULLETS 10
+#define FIRING_RATE 2
+#define BULLET_SPEED_MULTIPLIER 8
 
 typedef struct {
 	//int s;           // size
@@ -22,7 +25,6 @@ typedef struct {
 } ship_object;
 
 typedef struct {
-	//int s;           // size
 	coord pos, old_pos;      // position
 	float r, g, b;   // colour
 	float direction;         // direction facing (out of 360 degrees)
@@ -31,6 +33,14 @@ typedef struct {
 	int lifespan;
 	circle_coord_array cca;
 } particle;
+
+typedef struct {
+	coord pos, old_pos;      // position
+	float r, g, b;   // colour
+	float direction;         // direction facing (out of 360 degrees)
+	float v;           // velocity in pixels per second
+	bool active;           // velocity in pixels per second
+} bullet;
 
 void ship_controller();
 void ship_init();
@@ -42,12 +52,17 @@ void particle_movement(particle* ast);
 void particle_controller();
 void initialise_particle(particle* particle);
 void launch_particle();
-
+void launch_bullet();
+void initialise_bullet(bullet* bullet);
+void bullet_movement(bullet* bullet);
+void bullet_controller();
 extern bool moving_forward;
 extern bool turning_left;
 extern bool turning_right;
+extern bool fire_bullet;
 
 ship_object ship_obj;
+bullet active_bullets[MAX_BULLETS];
 
 
 

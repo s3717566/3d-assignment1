@@ -20,7 +20,7 @@ bool check_collision(float x1, float y1, float x2, float y2, float radius1, floa
 
 void initialise_circle(float radius, circle_coord_array* cca, float initialX, float initialY, int circle_points, bool make_random) {
 
-	printf("Initialised circle shape");
+	//printf("Initialised circle shape");
 
 	float x, y;
 	float randomnessX = 0;

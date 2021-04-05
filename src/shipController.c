@@ -3,12 +3,14 @@
 bool moving_forward = false;
 bool turning_left = false;
 bool turning_right = false;
+bool fire_bullet = false;
 
 int SHIP_HITBOX_SIZE = 60;
 int SHIP_EDGE_WARNING_SIZE = 200;
 int INITIAL_PARTICLE_SIZE = 10;
 int current_particle = 0;
 int particle_cooldown = 0;
+int bullet_cooldown = 0;
 
 circle_coord_array ship_hitbox_circle;
 circle_coord_array ship_warning_circle;
@@ -25,6 +27,7 @@ void ship_controller() {
 
 	//display border warning
 	if (arena_border_collision(&ship_warning_circle))
+	//if (out_of_bounds(ship_obj.xpos, ship_obj.ypos, SHIP_EDGE_WARNING_SIZE))
 	{
 		arena_warning(true);
 	}
@@ -34,8 +37,8 @@ void ship_controller() {
 	}
 
 	//debug
-	draw_circle(&ship_hitbox_circle, CIRCLE_POINTS);
-	draw_circle(&ship_warning_circle, CIRCLE_POINTS);
+	//draw_circle(&ship_hitbox_circle, CIRCLE_POINTS);
+	//draw_circle(&ship_warning_circle, CIRCLE_POINTS);
 
 	if (death_check(&ship_hitbox_circle)) {
 		ship_death();
@@ -109,6 +112,7 @@ void particle_controller()
 		if (active_particles[i].lifespan > 0) 
 		{
 			particle_movement(&active_particles[i]);
+			//initialise_circle needs to be used here as a circle cant just "change size", a new circle must be drawn with a new radius at the spot of the old one.
 			initialise_circle(active_particles[i].radius, &active_particles[i].cca, active_particles[i].pos.xpos, active_particles[i].pos.ypos, CIRCLE_POINTS, false);
 			//move_circle(&active_particles[i].cca, active_particles[i].old_pos.xpos - active_particles[i].pos.xpos, active_particles[i].old_pos.ypos - active_particles[i].pos.ypos, CIRCLE_POINTS);
 			draw_circle(&active_particles[i].cca, CIRCLE_POINTS);
@@ -165,3 +169,67 @@ void initialise_particle(particle* particle)
 
 	initialise_circle(particle->radius, &particle->cca, particle->pos.xpos, particle->pos.ypos, CIRCLE_POINTS, false);
 }
+
+void launch_bullet()
+{
+	if (fire_bullet) {
+		if (bullet_cooldown <= 0)
+		{
+			bool fired = false;
+			for (int i = 0; i < MAX_BULLETS; i++)
+			{
+				if (!active_bullets[i].active && !fired)
+				{
+					initialise_bullet(&active_bullets[i]);
+					fired = true;
+				}
+			}
+			bullet_cooldown = 100;
+			fire_bullet = false;
+
+		}
+	}
+
+	bullet_cooldown -= FIRING_RATE;	
+}
+
+void initialise_bullet(bullet* bullet)
+{
+	bullet->pos.xpos = ship_obj.xpos;
+	bullet->pos.ypos = ship_obj.ypos + 40;
+	
+	bullet->direction = ship_obj.direction;
+	bullet->v = 1 * BULLET_SPEED_MULTIPLIER;
+
+	bullet->active = true;
+
+	draw_point(bullet->pos.xpos, bullet->pos.ypos);
+}
+
+void bullet_movement(bullet* bullet) {
+	//TODO: old_pos doesnt seem to be needed
+	bullet->old_pos.xpos = bullet->pos.xpos;
+	bullet->old_pos.ypos = bullet->pos.ypos;
+
+	bullet->pos.xpos += sin(M_PI * bullet->direction / 180) * bullet->v;
+	bullet->pos.ypos += cos(M_PI * bullet->direction / 180) * bullet->v;
+
+	if (out_of_bounds(bullet->pos.xpos, bullet->pos.ypos, bullet->r))
+	{
+		bullet->active = false;
+	}
+}
+
+void bullet_controller()
+{
+	launch_bullet();
+	for (int i = 0; i < MAX_BULLETS; i++)
+	{
+		if (active_bullets[i].active)
+		{
+			bullet_movement(&active_bullets[i]);
+			draw_point(active_bullets[i].pos.xpos, active_bullets[i].pos.ypos);
+		}
+	}
+}
+

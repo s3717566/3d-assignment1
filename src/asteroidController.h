@@ -16,6 +16,7 @@ typedef struct {
 	float radius;
 	int spawn_protection;
 	bool active;
+	int hp;
 } asteroid;
 
 #define MAX_ASTEROID_LIMIT 10
@@ -28,5 +29,6 @@ void asteroid_movement(asteroid* ast);
 void asteroid_to_string(asteroid* ast);
 bool asteroid_out_of_bounds_check(asteroid* ast);
 void ship_collision();
-
+void damage_asteroid(asteroid* ast);
+void bullet_collision();
 

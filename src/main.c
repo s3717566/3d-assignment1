@@ -18,10 +18,6 @@
 
 #define KEY_ESC 27
 
-#define MOVING_RIGHT 1
-#define MOVING_LEFT  -1
-#define ROTATEDELTA 2
-
 bool round_over = false;
 
 void on_key_press(unsigned char key, int x, int y);
@@ -51,6 +47,9 @@ void on_key_press(unsigned char key, int x, int y)
 	case 'd':
 		turning_left = false;
 		turning_right = true;
+		break;
+	case ' ':
+		fire_bullet = true;
 		break;
 	default:
 		break;
@@ -90,10 +89,10 @@ void on_reshape(int w, int h)
 	//set time as seed for rand()
 	srand((unsigned)time(0));
 
-
 	//TODO: move this to new function so game can restart
 	ship_init();
 	initialise_ship_circles();
+	initialise_asteroid_controller();
 
 
 }
@@ -127,6 +126,11 @@ void render_frame()
 	ship_controller();
 	asteroid_controller();
 	particle_controller();
+	bullet_controller();
+	char text[] = "hello";
+
+	draw_string(100, 100, text);
+
 }
 
 void initialise_game()

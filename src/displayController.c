@@ -86,3 +86,40 @@ void draw_circle(circle_coord_array* cca, int circle_points) {
 	glEnd();
 	glPopMatrix();
 }
+
+void draw_point(float x, float y)
+{
+	glPushMatrix();
+	glPointSize(10);
+	glColor3f(0, 1.0, 0);
+	glBegin(GL_POINTS);
+	glVertex2f(x, y);
+	glEnd();
+	glPopMatrix();
+}
+
+void draw_string(float x, float y, char* string) {
+	
+	glDisable(GL_TEXTURE_2D); 
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(-(g_screen_width / 2), g_screen_width / 2, -(g_screen_height / 2), g_screen_height / 2);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glRasterPos2i(x, y);
+	void* font = GLUT_BITMAP_9_BY_15;
+
+	for (char* c = string; *c != '\0'; c++) {
+		glColor3d(1.0, 0.0, 0.0);
+		glutBitmapCharacter(font, *c);
+		
+	}
+	
+	glMatrixMode(GL_PROJECTION); 
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW); 
+	glPopMatrix();
+	glEnable(GL_TEXTURE_2D);
+}

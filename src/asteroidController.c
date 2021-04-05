@@ -2,7 +2,7 @@
 
 int ASTEROID_MIN_SIZE = 60;
 int ASTEROID_MAX_SIZE = 120;
-int ASTEROID_SPAWN_RADIUS = 1500;
+int ASTEROID_SPAWN_RADIUS = 1500;  //default: 1500
 
 asteroid active_asteroids[MAX_ASTEROID_LIMIT];
 
@@ -13,16 +13,18 @@ int wave_number = 0;
 
 void initialise_asteroid_controller()
 {
-	initialise_circle(ASTEROID_SPAWN_RADIUS, &asteroid_spawning_circle, 0, 0, CIRCLE_POINTS, false); //default: 1500
-	draw_circle(&asteroid_spawning_circle, false);
+	initialise_circle(ASTEROID_SPAWN_RADIUS, &asteroid_spawning_circle, 0, 0, CIRCLE_POINTS, false);
+	draw_circle(&asteroid_spawning_circle, CIRCLE_POINTS);
 }
 
 void initialise_asteroid(asteroid* asteroid_in) {
 	printf("initialised asteroid\n");
-	asteroid_in->radius = ASTEROID_MIN_SIZE + rand() % ASTEROID_MAX_SIZE;
+	int r = ASTEROID_MIN_SIZE + rand() % ASTEROID_MAX_SIZE;
+	asteroid_in->radius = r;
 	asteroid_in->velocity_multiplier = 0.3 + (rand() % 30 * 0.1);
 	asteroid_in->spawn_protection = 500;
 	asteroid_in->active = true;
+	asteroid_in->hp = 1 + r % 50;
 
 	//deciding where to spawn on the spawn circle
 	float x, y = 0;
@@ -46,7 +48,7 @@ void initialise_asteroid(asteroid* asteroid_in) {
 	float delta_x = x - ship_obj.xpos;
 	float delta_y = y - ship_obj.ypos;
 	float direction_rad = atan2(delta_y, delta_x);
-	printf("angle: %f", direction_rad);
+	//printf("angle: %f", direction_rad);
 
 	asteroid_in->direction = -90 + -direction_rad * (180 / M_PI);
 	active_asteroids_count++;
@@ -114,7 +116,7 @@ void asteroid_controller() {
 	}
 
 	ship_collision();
-	
+	bullet_collision();
 }
 
 bool asteroid_out_of_bounds_check(asteroid* ast) {
@@ -142,6 +144,7 @@ void asteroid_movement(asteroid* ast) {
 	ast->pos.xpos += sin(M_PI * ast->direction / 180) * ast->velocity_multiplier;
 	ast->pos.ypos += cos(M_PI * ast->direction / 180) * ast->velocity_multiplier;
 
+	//TODO: replace spawn protection with a check that it has entered the arena (x and y within arena bounds)
 	ast->spawn_protection--;
 }
 
@@ -155,6 +158,35 @@ void ship_collision()
 		{
 			printf("boom");
 			ship_death();
+		}
+	}
+}
+
+void damage_asteroid(asteroid* ast)
+{
+	ast->hp--;
+	if (ast->hp <= 0)
+	{
+		ast->active = false;
+	}
+}
+
+void bullet_collision()
+{
+	for (int i = 0; i < MAX_BULLETS; i++)
+	{
+		if (active_bullets[i].active)
+		{
+			for (int j = 0; j < MAX_ASTEROID_LIMIT; j++)
+			{
+				if (active_asteroids[j].active)
+				{
+					if (check_collision(active_bullets[i].pos.xpos, active_bullets[i].pos.ypos, active_asteroids[j].pos.xpos, active_asteroids[j].pos.ypos, 1, active_asteroids[i].radius))
+					{
+						damage_asteroid(&active_asteroids[j]);
+					}
+				}
+			}
 		}
 	}
 }
