@@ -22,7 +22,6 @@
 #define MOVING_LEFT  -1
 #define ROTATEDELTA 2
 
-bool warning = false;
 bool round_over = false;
 
 void on_key_press(unsigned char key, int x, int y);
@@ -127,6 +126,7 @@ void render_frame()
 
 	ship_controller();
 	asteroid_controller();
+	particle_controller();
 }
 
 void initialise_game()

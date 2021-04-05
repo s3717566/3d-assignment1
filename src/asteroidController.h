@@ -21,8 +21,6 @@ typedef struct {
 #define MAX_ASTEROID_LIMIT 10
 #define SECONDS_BETWEEN_WAVES 10;
 
-asteroid active_asteroids[MAX_ASTEROID_LIMIT];
-
 void initialise_asteroid_controller();
 void asteroid_controller();
 void initialise_asteroid(asteroid* asteroid_in);

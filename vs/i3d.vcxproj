@@ -165,13 +165,11 @@
     <ClInclude Include="..\src\arenaController.h" />
     <ClInclude Include="..\src\asteroidController.h" />
     <ClInclude Include="..\src\circle.h" />
+    <ClInclude Include="..\src\displayController.h" />
     <ClInclude Include="..\src\essentials.h" />
     <ClInclude Include="..\src\main.h" />
     <ClInclude Include="..\src\shipAsteroidConnection.h" />
     <ClInclude Include="..\src\shipController.h" />
-    <ClInclude Include="displayController.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
