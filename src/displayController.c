@@ -19,6 +19,7 @@ float red, green = 0;
 float blue = 1;
 int g_screen_width = 0;
 int g_screen_height = 0;
+float temprotate;
 
 void draw_arena(int screen_width, int screen_height) {
 	glPushMatrix();
@@ -69,13 +70,16 @@ void arena_warning(bool on) {
 	}
 }
 
-void draw_circle(circle_coord_array* cca, int circle_points) {
+void draw_circle(circle_coord_array* cca, int circle_points, float rotation) {
 
 	glPushMatrix();
 	glColor3f(1.0, 1.0, 1.0);
 	glLineWidth(2.0);
-	//glRotatef(10, 0, 0, 1);
+	//glRotatef(temprotate++, cca->center.xpos, cca->center.ypos, 1);
+	//glTranslatef(cca->center.xpos, cca->center.ypos, 1);
 	glBegin(GL_LINE_LOOP);
+
+
 	for (int i = 0; i < circle_points; i++) {
 		glVertex2f(cca->upper[i].xpos, cca->upper[i].ypos);
 	}

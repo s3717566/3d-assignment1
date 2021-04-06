@@ -115,7 +115,7 @@ void particle_controller()
 			//initialise_circle needs to be used here as a circle cant just "change size", a new circle must be drawn with a new radius at the spot of the old one.
 			initialise_circle(active_particles[i].radius, &active_particles[i].cca, active_particles[i].pos.xpos, active_particles[i].pos.ypos, CIRCLE_POINTS, false);
 			//move_circle(&active_particles[i].cca, active_particles[i].old_pos.xpos - active_particles[i].pos.xpos, active_particles[i].old_pos.ypos - active_particles[i].pos.ypos, CIRCLE_POINTS);
-			draw_circle(&active_particles[i].cca, CIRCLE_POINTS);
+			draw_circle(&active_particles[i].cca, CIRCLE_POINTS, 0);
 		}
 	}
 }

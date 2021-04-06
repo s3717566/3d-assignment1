@@ -2,7 +2,7 @@
 
 void move_circle(circle_coord_array* cca, float DistTravelledX, float DistTravelledY, int circle_points) {
 
-	for (int i = 0; i < circle_points; i++) {
+	/*for (int i = 0; i < circle_points; i++) {
 		cca->upper[i].xpos = cca->upper[i].xpos - DistTravelledX;
 		cca->upper[i].ypos = cca->upper[i].ypos - DistTravelledY;
 	}
@@ -10,7 +10,9 @@ void move_circle(circle_coord_array* cca, float DistTravelledX, float DistTravel
 	for (int i = circle_points; i > 0; i--) {
 		cca->lower[i].xpos = cca->lower[i].xpos - DistTravelledX;
 		cca->lower[i].ypos = cca->lower[i].ypos - DistTravelledY;
-	}
+	}*/
+	cca->center.xpos += DistTravelledX;
+	cca->center.ypos += DistTravelledY;
 }
 
 bool check_collision(float x1, float y1, float x2, float y2, float radius1, float radius2) {
@@ -51,4 +53,32 @@ void initialise_circle(float radius, circle_coord_array* cca, float initialX, fl
 		cca->lower[i].xpos = x + initialX;
 		cca->lower[i].ypos = y + initialY;
 	}
+
+	cca->center.xpos = initialX;
+	cca->center.ypos = initialY;
+}
+
+void rotate_circle(circle_coord_array* cca, float rotation, int circle_points)
+{
+	float firstXupper = cca->upper[0].xpos;
+	float firstYupper = cca->upper[0].ypos;
+	
+	for (int i = 0; i < circle_points - 1; i++) {
+		cca->upper[i].xpos = cca->upper[i + 1].xpos;
+		cca->upper[i].ypos = cca->upper[i + 1].ypos;
+	}
+
+	cca->upper[circle_points - 1].xpos = firstXupper;
+	cca->upper[circle_points - 1].ypos = firstYupper;
+
+	float firstXlower = cca->lower[circle_points - 1].xpos;
+	float firstYlower = cca->lower[circle_points - 1].ypos;
+	
+	for (int i = circle_points; i > 0; i--) {
+		cca->lower[i].xpos = cca->lower[i - 1].xpos;
+		cca->lower[i].ypos = cca->lower[i - 1].ypos;
+	}
+
+	cca->lower[0].xpos = firstXlower;
+	cca->lower[0].ypos = firstYlower;
 }
