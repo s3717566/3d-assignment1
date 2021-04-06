@@ -11,6 +11,9 @@ void move_circle(circle_coord_array* cca, float DistTravelledX, float DistTravel
 		cca->lower[i].xpos = cca->lower[i].xpos - DistTravelledX;
 		cca->lower[i].ypos = cca->lower[i].ypos - DistTravelledY;
 	}
+
+	cca->center.xpos += DistTravelledX;
+	cca->center.ypos += DistTravelledY;
 }
 
 bool check_collision(float x1, float y1, float x2, float y2, float radius1, float radius2) {
@@ -51,4 +54,8 @@ void initialise_circle(float radius, circle_coord_array* cca, float initialX, fl
 		cca->lower[i].xpos = x + initialX;
 		cca->lower[i].ypos = y + initialY;
 	}
+
+	cca->center.xpos = initialX;
+	cca->center.ypos = initialY;
+	cca->radius = radius;
 }

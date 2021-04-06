@@ -1,7 +1,7 @@
 #include "asteroidController.h"
 
-int ASTEROID_MIN_SIZE = 60;
-int ASTEROID_MAX_SIZE = 120;
+int ASTEROID_MIN_SIZE = 40;
+int ASTEROID_MAX_SIZE = 100;
 int ASTEROID_SPAWN_RADIUS = 1500;  //default: 1500
 
 asteroid active_asteroids[MAX_ASTEROID_LIMIT];
@@ -9,7 +9,7 @@ asteroid active_asteroids[MAX_ASTEROID_LIMIT];
 circle_coord_array asteroid_spawning_circle;
 int active_asteroids_count = 0;
 int frames_until_next_wave = 0;
-int wave_number = 0;
+int wave_number = 10;
 
 void initialise_asteroid_controller()
 {
@@ -21,10 +21,12 @@ void initialise_asteroid(asteroid* asteroid_in) {
 	printf("initialised asteroid\n");
 	int r = ASTEROID_MIN_SIZE + rand() % ASTEROID_MAX_SIZE;
 	asteroid_in->radius = r;
-	asteroid_in->velocity_multiplier = 0.3 + (rand() % 30 * 0.1);
+	asteroid_in->velocity_multiplier = 0.8 + (rand() % 30 * 0.1);
 	asteroid_in->spawn_protection = 500;
 	asteroid_in->active = true;
-	asteroid_in->hp = 1 + r % 50;
+	asteroid_in->hp = (r / 40);
+	asteroid_in->initialised = false;
+	asteroid_in->last_hit_wall = none;
 
 	//deciding where to spawn on the spawn circle
 	float x, y = 0;
@@ -99,7 +101,7 @@ void asteroid_controller() {
 					if (active_asteroids[j].active == true) {
 						if (check_collision(active_asteroids[i].pos.xpos, active_asteroids[i].pos.ypos, active_asteroids[j].pos.xpos, active_asteroids[j].pos.ypos, active_asteroids[i].radius, active_asteroids[j].radius))
 						{
-							printf("boing");
+							//printf("boing");
 						}
 					}
 				}
@@ -111,7 +113,63 @@ void asteroid_controller() {
 			draw_circle(&active_asteroids[i].outline_visual, ASTEROID_POINTS);
 			//draw_circle(&active_asteroids[i].outline, CIRCLE_POINTS);
 
-			asteroid_out_of_bounds_check(&active_asteroids[i]);
+			if (arena_border_collision(&active_asteroids[i].outline) == none)
+			{
+				active_asteroids[i].initialised = true;
+			}
+			
+			//this means that the asteroid has fully entered the field
+			if (active_asteroids[i].initialised) {
+				//asteroid_out_of_bounds_check(&active_asteroids[i]);
+
+				//printf("initialised");
+
+				switch (arena_border_collision(&active_asteroids[i].outline))
+				{
+				case north:
+					//seems to work
+					//printf("NORTH %f %f", active_asteroids[i].outline.center.ypos, active_asteroids[i].outline.radius);
+					if (active_asteroids[i].last_hit_wall != north) {
+						active_asteroids[i].last_hit_wall = north;
+
+						active_asteroids[i].direction = 180 - (fmod(active_asteroids[i].direction, 360));
+					}
+					break;
+				case south:
+
+					//printf("SOUTH %f %f", active_asteroids[i].outline.center.ypos, active_asteroids[i].outline.radius);
+					if (active_asteroids[i].last_hit_wall != south) {
+						active_asteroids[i].last_hit_wall = south;
+
+						active_asteroids[i].direction = 180 - (fmod(active_asteroids[i].direction, 360));
+					}
+					break;
+				case east:
+					//printf("EAST %f %f", active_asteroids[i].outline.center.xpos, active_asteroids[i].outline.radius);
+					if (active_asteroids[i].last_hit_wall != east) {
+						active_asteroids[i].last_hit_wall = east;
+
+						active_asteroids[i].direction = 360 - fabs(fmod(active_asteroids[i].direction, 360));
+					}
+					break;
+				case west:
+					if (active_asteroids[i].last_hit_wall != west) {
+						//initialised asteroids going west will have negative direction
+						//needs to be corrected to positive
+						if (active_asteroids[i].direction < 0)
+						{
+							active_asteroids[i].direction = 360 + active_asteroids[i].direction;
+						}
+						active_asteroids[i].last_hit_wall = west;
+
+						active_asteroids[i].direction = 360 - fabs(fmod(active_asteroids[i].direction, 360));
+
+					}
+					break;
+				case none:
+					break;
+				}
+			}
 		}
 	}
 
@@ -122,12 +180,12 @@ void asteroid_controller() {
 bool asteroid_out_of_bounds_check(asteroid* ast) {
 	if (ast->spawn_protection <= 0)
 		if (out_of_bounds(ast->pos.xpos, ast->pos.ypos, ast->radius))
-	{
-		printf("Boom... asteroid destroyed at %f, %f, width: %i, height: %i", ast->pos.xpos, ast->pos.ypos, g_screen_width, g_screen_height);
+		{
+			printf("Boom... asteroid destroyed at %f, %f, width: %i, height: %i", ast->pos.xpos, ast->pos.ypos, g_screen_width, g_screen_height);
 
-		ast->active = false;
-		return true;
-	}
+			ast->active = false;
+			return true;
+		}
 	return false;
 }
 
@@ -154,10 +212,12 @@ void ship_collision()
 	{
 		//change below - this means spawn protected asteroids wont destroy the ship
 			//if (active_asteroids[i].active == true) {
-		if (check_collision(active_asteroids[i].pos.xpos, active_asteroids[i].pos.ypos, ship_obj.xpos, ship_obj.ypos, active_asteroids[i].radius, ship_obj.r))
-		{
-			printf("boom");
-			ship_death();
+		if (active_asteroids[i].initialised) {
+			if (check_collision(active_asteroids[i].pos.xpos, active_asteroids[i].pos.ypos, ship_obj.xpos, ship_obj.ypos, active_asteroids[i].radius, ship_obj.r))
+			{
+				//printf("boom");
+				ship_death();
+			}
 		}
 	}
 }
@@ -184,6 +244,8 @@ void bullet_collision()
 					if (check_collision(active_bullets[i].pos.xpos, active_bullets[i].pos.ypos, active_asteroids[j].pos.xpos, active_asteroids[j].pos.ypos, 1, active_asteroids[i].radius))
 					{
 						damage_asteroid(&active_asteroids[j]);
+						printf("hp left %i", active_asteroids[j].hp);
+						kill_bullet(i);
 					}
 				}
 			}

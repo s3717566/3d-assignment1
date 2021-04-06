@@ -26,9 +26,10 @@ void ship_controller() {
 	move_circle(&ship_warning_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos, CIRCLE_POINTS);
 
 	//display border warning
-	if (arena_border_collision(&ship_warning_circle))
+	if (arena_border_collision(&ship_warning_circle) != none)
 	//if (out_of_bounds(ship_obj.xpos, ship_obj.ypos, SHIP_EDGE_WARNING_SIZE))
 	{
+		printf("%i",arena_border_collision(&ship_warning_circle));
 		arena_warning(true);
 	}
 	else
@@ -83,15 +84,17 @@ void initialise_ship_circles()
 
 void ship_death()
 {
-	printf("you have died.");
+	//printf("you have died.");
 }
 
 bool death_check(circle_coord_array* cca)
 {
-	if (arena_border_collision(cca))
+	if (arena_border_collision(cca) != none)
 	{
+		printf("%i", arena_border_collision(&ship_warning_circle));
 		return true;
 	}
+	return false;
 }
 
 void particle_controller()
@@ -231,5 +234,10 @@ void bullet_controller()
 			draw_point(active_bullets[i].pos.xpos, active_bullets[i].pos.ypos);
 		}
 	}
+}
+
+void kill_bullet(int index)
+{
+	active_bullets[index].active = false;
 }
 

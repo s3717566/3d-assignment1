@@ -56,6 +56,8 @@ void launch_bullet();
 void initialise_bullet(bullet* bullet);
 void bullet_movement(bullet* bullet);
 void bullet_controller();
+void kill_bullet(int index);
+
 extern bool moving_forward;
 extern bool turning_left;
 extern bool turning_right;

@@ -15,12 +15,16 @@ typedef struct {
 	float rotation;
 	float radius;
 	int spawn_protection;
+	bool initialised;
 	bool active;
 	int hp;
+	arena_collision last_hit_wall;
 } asteroid;
+
 
 #define MAX_ASTEROID_LIMIT 10
 #define SECONDS_BETWEEN_WAVES 10;
+#define MIN_ASTEROID_SPEED 0.8;
 
 void initialise_asteroid_controller();
 void asteroid_controller();

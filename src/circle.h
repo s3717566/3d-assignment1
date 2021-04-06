@@ -11,6 +11,8 @@ typedef struct {
 typedef struct {
 	coord upper[CIRCLE_POINTS + 1];
 	coord lower[CIRCLE_POINTS + 1];
+	coord center;
+	float radius;
 } circle_coord_array;
 
 void move_circle(circle_coord_array*, float, float, int);
