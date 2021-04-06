@@ -9,12 +9,23 @@ asteroid active_asteroids[MAX_ASTEROID_LIMIT];
 circle_coord_array asteroid_spawning_circle;
 int active_asteroids_count = 0;
 int frames_until_next_wave = 0;
-int wave_number = 10;
+int wave_number = 0;
+int score = 0;
+int cur_time = 0;
 
 void initialise_asteroid_controller()
 {
 	initialise_circle(ASTEROID_SPAWN_RADIUS, &asteroid_spawning_circle, 0, 0, CIRCLE_POINTS, false);
-	draw_circle(&asteroid_spawning_circle, CIRCLE_POINTS);
+	score = 0;
+	wave_number = 0;
+	active_asteroids_count = 0;
+	frames_until_next_wave = 0;
+	
+	//reset asteroids
+	for (int i = 0; i < MAX_ASTEROID_LIMIT; i++)
+	{
+		active_asteroids[i].active = false;
+	}
 }
 
 void initialise_asteroid(asteroid* asteroid_in) {
@@ -46,6 +57,9 @@ void initialise_asteroid(asteroid* asteroid_in) {
 	asteroid_in->pos.xpos = x;
 	asteroid_in->pos.ypos = y;
 
+	asteroid_in->oldpos.xpos = x;
+	asteroid_in->oldpos.ypos = y;
+
 	//determine direction towards ship (could this be used to determine collisions?)
 	float delta_x = x - ship_obj.xpos;
 	float delta_y = y - ship_obj.ypos;
@@ -60,15 +74,15 @@ void initialise_asteroid(asteroid* asteroid_in) {
 }
 
 void asteroid_controller() {
-	int temp = 0;
+	bool wave_over = true;
 	for (int i = 0; i < active_asteroids_count; i++) {
 		if (active_asteroids[i].active == true) {
-			temp++;
+			wave_over = false;
 		}
 	}
 
 
-	if (temp == 0) {
+	if (wave_over) {
 		if (frames_until_next_wave <= 0) {
 			//start wave
 			wave_number++;
@@ -87,8 +101,6 @@ void asteroid_controller() {
 		}
 
 	}
-
-	//debug - does not need to be drawn
 
 	for (int i = 0; i < active_asteroids_count; i++) {
 		if (active_asteroids[i].active == true) {
@@ -127,8 +139,6 @@ void asteroid_controller() {
 				switch (arena_border_collision(&active_asteroids[i].outline))
 				{
 				case north:
-					//seems to work
-					//printf("NORTH %f %f", active_asteroids[i].outline.center.ypos, active_asteroids[i].outline.radius);
 					if (active_asteroids[i].last_hit_wall != north) {
 						active_asteroids[i].last_hit_wall = north;
 
@@ -137,7 +147,6 @@ void asteroid_controller() {
 					break;
 				case south:
 
-					//printf("SOUTH %f %f", active_asteroids[i].outline.center.ypos, active_asteroids[i].outline.radius);
 					if (active_asteroids[i].last_hit_wall != south) {
 						active_asteroids[i].last_hit_wall = south;
 
@@ -145,7 +154,6 @@ void asteroid_controller() {
 					}
 					break;
 				case east:
-					//printf("EAST %f %f", active_asteroids[i].outline.center.xpos, active_asteroids[i].outline.radius);
 					if (active_asteroids[i].last_hit_wall != east) {
 						active_asteroids[i].last_hit_wall = east;
 
@@ -175,6 +183,19 @@ void asteroid_controller() {
 
 	ship_collision();
 	bullet_collision();
+	
+	char score_str[10] = "Score: ";
+	score_str[7] = score / 10 + '0';
+	score_str[8] = score % 10 + '0';
+	draw_string(-g_screen_width / 2 + 40, g_screen_height / 2 - 40, score_str);
+
+	//now that this is fixed it probably doesnt need to be here
+	cur_time = get_time();
+	char time_str[10] = "Time: ";
+	time_str[6] = cur_time / 100 + '0';
+	time_str[7] = (cur_time % 100) / 10 + '0';
+	time_str[8] = cur_time % 10 + '0';
+	draw_string(-g_screen_width / 2 + 40, g_screen_height / 2 - 60, time_str);	
 }
 
 bool asteroid_out_of_bounds_check(asteroid* ast) {
@@ -213,10 +234,13 @@ void ship_collision()
 		//change below - this means spawn protected asteroids wont destroy the ship
 			//if (active_asteroids[i].active == true) {
 		if (active_asteroids[i].initialised) {
-			if (check_collision(active_asteroids[i].pos.xpos, active_asteroids[i].pos.ypos, ship_obj.xpos, ship_obj.ypos, active_asteroids[i].radius, ship_obj.r))
-			{
-				//printf("boom");
-				ship_death();
+			if (active_asteroids[i].active) {
+				if (check_collision(active_asteroids[i].pos.xpos, active_asteroids[i].pos.ypos, ship_obj.xpos, ship_obj.ypos, active_asteroids[i].radius, ship_obj.r))
+				{
+					printf("boom");
+					ship_death();
+					initialise_asteroid_controller();
+				}
 			}
 		}
 	}
@@ -227,6 +251,7 @@ void damage_asteroid(asteroid* ast)
 	ast->hp--;
 	if (ast->hp <= 0)
 	{
+		score++;
 		ast->active = false;
 	}
 }

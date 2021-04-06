@@ -24,7 +24,7 @@ void on_key_press(unsigned char key, int x, int y);
 void on_key_release(unsigned char key, int x, int y);
 void on_reshape(int w, int h);
 void on_display();
-
+void update_time();
 void render_frame();
 void on_idle();
 void init_app(int* argcp, char** argv);
@@ -32,7 +32,7 @@ int main(int argc, char** argv);
 
 void on_key_press(unsigned char key, int x, int y)
 {
-	fprintf(stderr, "on_key_press()\n");
+	//fprintf(stderr, "on_key_press()\n");
 	switch (key) {
 	case KEY_ESC:
 		exit(EXIT_SUCCESS);
@@ -58,7 +58,7 @@ void on_key_press(unsigned char key, int x, int y)
 
 void on_key_release(unsigned char key, int x, int y)
 {
-	fprintf(stderr, "on_key_release()\n");
+	//fprintf(stderr, "on_key_release()\n");
 	switch (key) {
 	case 'w':
 		moving_forward = false;
@@ -122,14 +122,12 @@ void update_game_state()
 void render_frame()
 {
 	draw_arena(g_screen_width, g_screen_height);
-
 	ship_controller();
 	asteroid_controller();
 	particle_controller();
 	bullet_controller();
-	char text[] = "hello";
+	//update_time();
 
-	draw_string(100, 100, text);
 
 }
 
@@ -138,15 +136,19 @@ void initialise_game()
 
 }
 
+
+
 void on_idle()
 {
-	float cur_time = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
+	
 	//float dt = cur_time - g_last_time;
 	//update_game_state(g_game_objects, dt);
 	//asteroid_movement(&active_asteroids[0]);
 	//g_last_time = cur_time;
 	glutPostRedisplay();
 }
+
+
 
 void init_app(int* argcp, char** argv)
 {

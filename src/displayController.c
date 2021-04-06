@@ -19,6 +19,8 @@ float red, green = 0;
 float blue = 1;
 int g_screen_width = 0;
 int g_screen_height = 0;
+int time_on_death = 0;
+
 
 void draw_arena(int screen_width, int screen_height) {
 	glPushMatrix();
@@ -27,6 +29,7 @@ void draw_arena(int screen_width, int screen_height) {
 
 	glBegin(GL_LINE_LOOP);
 
+	//TODO: use g_screen_width etc instead
 	glVertex2f(-(screen_width / 2), -(screen_height / 2));
 	glVertex2f(screen_width / 2, -(screen_height / 2));
 	glVertex2f(screen_width / 2, (screen_height / 2));
@@ -114,7 +117,6 @@ void draw_string(float x, float y, char* string) {
 	for (char* c = string; *c != '\0'; c++) {
 		glColor3d(1.0, 0.0, 0.0);
 		glutBitmapCharacter(font, *c);
-		
 	}
 	
 	glMatrixMode(GL_PROJECTION); 
@@ -122,4 +124,14 @@ void draw_string(float x, float y, char* string) {
 	glMatrixMode(GL_MODELVIEW); 
 	glPopMatrix();
 	glEnable(GL_TEXTURE_2D);
+}
+
+int get_time()
+{
+	return (glutGet(GLUT_ELAPSED_TIME) / 1000) - time_on_death;
+}
+
+void set_reset_time()
+{
+	time_on_death = get_time() + time_on_death;
 }

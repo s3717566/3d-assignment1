@@ -29,7 +29,7 @@ void ship_controller() {
 	if (arena_border_collision(&ship_warning_circle) != none)
 	//if (out_of_bounds(ship_obj.xpos, ship_obj.ypos, SHIP_EDGE_WARNING_SIZE))
 	{
-		printf("%i",arena_border_collision(&ship_warning_circle));
+		//printf("%i",arena_border_collision(&ship_warning_circle));
 		arena_warning(true);
 	}
 	else
@@ -85,13 +85,16 @@ void initialise_ship_circles()
 void ship_death()
 {
 	//printf("you have died.");
+	set_reset_time();
+	ship_init();
+	initialise_ship_circles();
 }
 
 bool death_check(circle_coord_array* cca)
 {
 	if (arena_border_collision(cca) != none)
 	{
-		printf("%i", arena_border_collision(&ship_warning_circle));
+		printf("arena border collision %i", arena_border_collision(&ship_warning_circle));
 		return true;
 	}
 	return false;
