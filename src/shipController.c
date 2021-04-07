@@ -85,6 +85,7 @@ void initialise_ship_circles()
 void ship_death()
 {
 	//printf("you have died.");
+	
 	set_reset_time();
 	ship_init();
 	initialise_ship_circles();
@@ -94,6 +95,7 @@ bool death_check(circle_coord_array* cca)
 {
 	if (arena_border_collision(cca) != none)
 	{
+		//TODO: NEED TO RESET ASTEROID CONTROLLER ON DEATHS FROM THIS CLASS
 		printf("arena border collision %i", arena_border_collision(&ship_warning_circle));
 		return true;
 	}

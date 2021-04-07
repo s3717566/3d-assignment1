@@ -72,6 +72,7 @@ void arena_warning(bool on) {
 	}
 }
 
+//TODO: fix rotation (n1 priority) and fix incomplete asteroids
 void draw_circle(circle_coord_array* cca, int circle_points) {
 
 	glPushMatrix();

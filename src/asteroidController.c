@@ -9,7 +9,7 @@ asteroid active_asteroids[MAX_ASTEROID_LIMIT];
 circle_coord_array asteroid_spawning_circle;
 int active_asteroids_count = 0;
 int frames_until_next_wave = 0;
-int wave_number = 0;
+int wave_number = 20;
 int score = 0;
 int cur_time = 0;
 
@@ -209,7 +209,6 @@ bool asteroid_out_of_bounds_check(asteroid* ast) {
 		}
 	return false;
 }
-
 
 void asteroid_to_string(asteroid* ast) {
 	printf("\nradius: %f\nxpos: %f, ypos: %f\nvelocity: %f\ndirection: %f\n", ast->radius, ast->pos.xpos, ast->pos.ypos, ast->velocity_multiplier, ast->direction);

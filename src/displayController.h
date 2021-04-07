@@ -2,7 +2,7 @@
 
 #include "circle.h"
 
-#define ASTEROID_POINTS 20
+#define ASTEROID_POINTS 12
 
 void draw_arena(int, int);
 void draw_ship(float, float, float, float);
