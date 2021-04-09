@@ -78,6 +78,7 @@ void on_reshape(int w, int h)
 {
 	g_screen_width = w;
 	g_screen_height = h;
+	printf("g_screen_width: %i", g_screen_width);
 
 	fprintf(stderr, "on_reshape(%d, %d)\n", w, h);
 	glViewport(0, 0, w, h);

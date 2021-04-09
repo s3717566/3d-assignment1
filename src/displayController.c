@@ -39,20 +39,28 @@ void draw_arena(int screen_width, int screen_height) {
 	glPopMatrix();
 }
 
-void draw_ship(float x, float y, float velocity, float direction) {
+void draw_ship(float x, float y, float direction) {
+
 	glPushMatrix();
-	glTranslatef(x, y, velocity);
+	
+	glTranslatef(x, y, 0);
 	glRotatef(-direction, 0, 0, 1);
+	glTranslatef(-x, -y, 0);
+
+	int err;
+	while ((err = glGetError()) != GL_NO_ERROR)
+		printf("display: %s\n", gluErrorString(err));
+
 	glBegin(GL_TRIANGLE_STRIP);
-	glVertex2f(0, 110);
-	glVertex2f(0, 0);
-	glVertex2f(50, -20);
+	glVertex2f(x, y + 110);
+	glVertex2f(x, y);
+	glVertex2f(x + 50, y -20);
 	glEnd();
 
 	glBegin(GL_TRIANGLE_STRIP);
-	glVertex2f(0, 110);
-	glVertex2f(0, 0);
-	glVertex2f(-50, -20);
+	glVertex2f(x, y + 110);
+	glVertex2f(x, y);
+	glVertex2f(x -50, y -20);
 	glEnd();
 	glPopMatrix();
 }
@@ -73,13 +81,17 @@ void arena_warning(bool on) {
 }
 
 //TODO: fix rotation (n1 priority) and fix incomplete asteroids
-void draw_circle(circle_coord_array* cca, int circle_points) {
+void draw_circle(circle_coord_array* cca, int circle_points, float rotation) {
 
 	glPushMatrix();
 	glColor3f(1.0, 1.0, 1.0);
 	glLineWidth(2.0);
-	//glRotatef(10, 0, 0, 1);
+	glTranslatef(cca->center.xpos, cca->center.ypos, 0);
+	glRotatef(rotation, 0, 0, 1);
+	glTranslatef(-cca->center.xpos, -cca->center.ypos, 0);
+
 	glBegin(GL_LINE_LOOP);
+	
 	for (int i = 0; i < circle_points; i++) {
 		glVertex2f(cca->upper[i].xpos, cca->upper[i].ypos);
 	}
@@ -87,6 +99,7 @@ void draw_circle(circle_coord_array* cca, int circle_points) {
 	for (int i = circle_points; i > 0; i--) {
 		glVertex2f(cca->lower[i].xpos, cca->lower[i].ypos);
 	}
+	
 	glEnd();
 	glPopMatrix();
 }

@@ -18,7 +18,7 @@ particle active_particles[MAX_PARTICLES];
 
 
 void ship_controller() {
-	draw_ship(ship_obj.xpos, ship_obj.ypos, ship_obj.v, ship_obj.direction);
+	draw_ship(ship_obj.xpos, ship_obj.ypos, ship_obj.direction);
 	ship_movement();
 
 	move_circle(&ship_hitbox_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos, CIRCLE_POINTS);
@@ -38,8 +38,8 @@ void ship_controller() {
 	}
 
 	//debug
-	//draw_circle(&ship_hitbox_circle, CIRCLE_POINTS);
-	//draw_circle(&ship_warning_circle, CIRCLE_POINTS);
+	draw_circle(&ship_hitbox_circle, CIRCLE_POINTS, 0);
+	draw_circle(&ship_warning_circle, CIRCLE_POINTS, 0);
 
 	if (death_check(&ship_hitbox_circle)) {
 		ship_death();
@@ -47,10 +47,10 @@ void ship_controller() {
 }
 
 void ship_init() {
-	ship_obj.xpos = -600;
-	ship_obj.ypos = -300;
-	ship_obj.oldxpos = -600;
-	ship_obj.oldypos = -300;
+	ship_obj.xpos = 00;
+	ship_obj.ypos = 00;
+	ship_obj.oldxpos = 00;
+	ship_obj.oldypos = 00;
 	ship_obj.r = (float)rand() / RAND_MAX;
 	ship_obj.g = (float)rand() / RAND_MAX;
 	ship_obj.b = (float)rand() / RAND_MAX;
@@ -123,7 +123,7 @@ void particle_controller()
 			//initialise_circle needs to be used here as a circle cant just "change size", a new circle must be drawn with a new radius at the spot of the old one.
 			initialise_circle(active_particles[i].radius, &active_particles[i].cca, active_particles[i].pos.xpos, active_particles[i].pos.ypos, CIRCLE_POINTS, false);
 			//move_circle(&active_particles[i].cca, active_particles[i].old_pos.xpos - active_particles[i].pos.xpos, active_particles[i].old_pos.ypos - active_particles[i].pos.ypos, CIRCLE_POINTS);
-			draw_circle(&active_particles[i].cca, CIRCLE_POINTS);
+			draw_circle(&active_particles[i].cca, CIRCLE_POINTS, 0);
 		}
 	}
 }
