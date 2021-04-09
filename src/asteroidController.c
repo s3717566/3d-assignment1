@@ -119,11 +119,11 @@ void asteroid_controller() {
 				}
 			}
 
-			move_circle(&active_asteroids[i].outline_visual, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, ASTEROID_POINTS);
-			move_circle(&active_asteroids[i].outline, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, CIRCLE_POINTS);
+			// move_circle(&active_asteroids[i].outline_visual, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, ASTEROID_POINTS);
+			// move_circle(&active_asteroids[i].outline, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, CIRCLE_POINTS);
 
-			draw_circle(&active_asteroids[i].outline_visual, ASTEROID_POINTS);
-			//draw_circle(&active_asteroids[i].outline, CIRCLE_POINTS);
+			draw_circle(&active_asteroids[i].outline_visual, ASTEROID_POINTS, active_asteroids[i].rotation);
+			draw_circle(&active_asteroids[i].outline, CIRCLE_POINTS, 0);
 
 			if (arena_border_collision(&active_asteroids[i].outline) == none)
 			{
@@ -221,6 +221,12 @@ void asteroid_movement(asteroid* ast) {
 
 	ast->pos.xpos += sin(M_PI * ast->direction / 180) * ast->velocity_multiplier;
 	ast->pos.ypos += cos(M_PI * ast->direction / 180) * ast->velocity_multiplier;
+
+	ast->outline.center.xpos = ast->pos.xpos;
+	ast->outline.center.ypos = ast->pos.ypos;
+	
+	ast->outline_visual.center.xpos = ast->pos.xpos;
+	ast->outline_visual.center.ypos = ast->pos.ypos;
 
 	//TODO: replace spawn protection with a check that it has entered the arena (x and y within arena bounds)
 	ast->spawn_protection--;

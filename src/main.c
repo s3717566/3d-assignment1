@@ -78,6 +78,7 @@ void on_reshape(int w, int h)
 {
 	g_screen_width = w;
 	g_screen_height = h;
+	printf("g_screen_width: %i", g_screen_width);
 
 	fprintf(stderr, "on_reshape(%d, %d)\n", w, h);
 	glViewport(0, 0, w, h);
@@ -123,7 +124,7 @@ void render_frame()
 {
 	draw_arena(g_screen_width, g_screen_height);
 	ship_controller();
-	asteroid_controller();
+	// asteroid_controller();
 	particle_controller();
 	bullet_controller();
 	//update_time();

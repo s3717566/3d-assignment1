@@ -12,6 +12,7 @@ typedef struct {
 	coord upper[CIRCLE_POINTS + 1];
 	coord lower[CIRCLE_POINTS + 1];
 	coord center;
+	coord initial_center;
 	float radius;
 } circle_coord_array;
 
