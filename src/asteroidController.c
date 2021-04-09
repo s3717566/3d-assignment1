@@ -29,7 +29,7 @@ void initialise_asteroid_controller()
 }
 
 void initialise_asteroid(asteroid* asteroid_in) {
-	printf("initialised asteroid\n");
+	//printf("initialised asteroid\n");
 	int r = ASTEROID_MIN_SIZE + rand() % ASTEROID_MAX_SIZE;
 	asteroid_in->radius = r;
 	asteroid_in->velocity_multiplier = 0.8 + (rand() % 30 * 0.1);
@@ -38,6 +38,8 @@ void initialise_asteroid(asteroid* asteroid_in) {
 	asteroid_in->hp = (r / 40);
 	asteroid_in->initialised = false;
 	asteroid_in->last_hit_wall = none;
+	asteroid_in->rotation = 0;
+	asteroid_in->rotation_velocity_multiplier = (rand() % 200) * 0.01 - 1;
 
 	//deciding where to spawn on the spawn circle
 	float x, y = 0;
@@ -119,11 +121,11 @@ void asteroid_controller() {
 				}
 			}
 
-			// move_circle(&active_asteroids[i].outline_visual, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, ASTEROID_POINTS);
-			// move_circle(&active_asteroids[i].outline, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, CIRCLE_POINTS);
+			 move_circle(&active_asteroids[i].outline_visual, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, ASTEROID_POINTS);
+			 move_circle(&active_asteroids[i].outline, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, CIRCLE_POINTS);
 
 			draw_circle(&active_asteroids[i].outline_visual, ASTEROID_POINTS, active_asteroids[i].rotation);
-			draw_circle(&active_asteroids[i].outline, CIRCLE_POINTS, 0);
+			//draw_circle(&active_asteroids[i].outline, CIRCLE_POINTS, 0);
 
 			if (arena_border_collision(&active_asteroids[i].outline) == none)
 			{
@@ -171,7 +173,6 @@ void asteroid_controller() {
 						active_asteroids[i].last_hit_wall = west;
 
 						active_asteroids[i].direction = 360 - fabs(fmod(active_asteroids[i].direction, 360));
-
 					}
 					break;
 				case none:
@@ -211,7 +212,7 @@ bool asteroid_out_of_bounds_check(asteroid* ast) {
 }
 
 void asteroid_to_string(asteroid* ast) {
-	printf("\nradius: %f\nxpos: %f, ypos: %f\nvelocity: %f\ndirection: %f\n", ast->radius, ast->pos.xpos, ast->pos.ypos, ast->velocity_multiplier, ast->direction);
+	printf("\nradius: %f\nxpos: %f, ypos: %f\nvelocity: %f\ndirection: %f\nrotation: %f", ast->radius, ast->pos.xpos, ast->pos.ypos, ast->velocity_multiplier, ast->direction, ast->rotation);
 }
 
 void asteroid_movement(asteroid* ast) {
@@ -230,6 +231,14 @@ void asteroid_movement(asteroid* ast) {
 
 	//TODO: replace spawn protection with a check that it has entered the arena (x and y within arena bounds)
 	ast->spawn_protection--;
+
+	if (ast->rotation_velocity_multiplier > 0)
+	{
+		ast->rotation += 1 + ast->rotation_velocity_multiplier;
+	} else
+	{
+		ast->rotation -= 1 + ast->rotation_velocity_multiplier;
+	}
 }
 
 void ship_collision()

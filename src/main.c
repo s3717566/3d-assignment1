@@ -124,7 +124,7 @@ void render_frame()
 {
 	draw_arena(g_screen_width, g_screen_height);
 	ship_controller();
-	// asteroid_controller();
+	asteroid_controller();
 	particle_controller();
 	bullet_controller();
 	//update_time();

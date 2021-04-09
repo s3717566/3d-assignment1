@@ -29,26 +29,26 @@ arena_collision arena_border_collision(circle_coord_array* cca)
 	//
 	// }
 
-	// if (cca->center.xpos - cca->radius < -g_screen_width / 2)
-	// {
-	// 	printf("west xpos: %f, radius: %f, less than %i\n", cca->center.xpos, cca->radius, -(g_screen_width / 2 ));
-	// 	return west;
-	// }
-	//
-	// if (cca->center.xpos + cca->radius > g_screen_width / 2)
-	// {
-	// 	return east;
-	// }
-	//
-	// if (cca->center.ypos + cca->radius > g_screen_height / 2)
-	// {
-	// 	return north;
-	// }
-	//
-	// if (cca->center.ypos - cca->radius < -g_screen_height / 2) 
-	// {
-	// 	return south;
-	// }
+	 if (cca->center.xpos - cca->radius < -g_screen_width / 2)
+	 {
+	 	//printf("west xpos: %f, radius: %f, less than %i\n", cca->center.xpos, cca->radius, -(g_screen_width / 2 ));
+	 	return west;
+	 }
+	
+	 if (cca->center.xpos + cca->radius > g_screen_width / 2)
+	 {
+	 	return east;
+	 }
+	
+	 if (cca->center.ypos + cca->radius > g_screen_height / 2)
+	 {
+	 	return north;
+	 }
+	
+	 if (cca->center.ypos - cca->radius < -g_screen_height / 2) 
+	 {
+	 	return south;
+	 }
 	
 	return none;
 }

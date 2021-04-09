@@ -90,7 +90,6 @@ void draw_circle(circle_coord_array* cca, int circle_points, float rotation) {
 	glRotatef(rotation, 0, 0, 1);
 	glTranslatef(-cca->center.xpos, -cca->center.ypos, 0);
 
-	//printf("xpos: %f",cca->center.xpos);
 	glBegin(GL_LINE_LOOP);
 	
 	for (int i = 0; i < circle_points; i++) {
