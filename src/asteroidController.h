@@ -7,6 +7,7 @@
 typedef struct {
 	coord pos;
 	coord oldpos;
+	coord futurepos;
 	circle_coord_array outline;
 	circle_coord_array outline_visual;
 	float direction;
@@ -35,4 +36,9 @@ bool asteroid_out_of_bounds_check(asteroid* ast);
 void ship_collision();
 void damage_asteroid(asteroid* ast);
 void bullet_collision();
+void restart();
+void has_died();
+
+extern bool restart_toggle;
+extern bool game_over;
 

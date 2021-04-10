@@ -57,6 +57,9 @@ void initialise_bullet(bullet* bullet);
 void bullet_movement(bullet* bullet);
 void bullet_controller();
 void kill_bullet(int index);
+bool check_ship_death();
+void restart_ship();
+
 
 extern bool moving_forward;
 extern bool turning_left;

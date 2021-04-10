@@ -12,15 +12,17 @@ int frames_until_next_wave = 0;
 int wave_number = 20;
 int score = 0;
 int cur_time = 0;
+bool game_over = false;
+bool restart_toggle = false;
 
 void initialise_asteroid_controller()
 {
 	initialise_circle(ASTEROID_SPAWN_RADIUS, &asteroid_spawning_circle, 0, 0, CIRCLE_POINTS, false);
 	score = 0;
-	wave_number = 0;
+	wave_number = 20;
 	active_asteroids_count = 0;
 	frames_until_next_wave = 0;
-	
+
 	//reset asteroids
 	for (int i = 0; i < MAX_ASTEROID_LIMIT; i++)
 	{
@@ -61,6 +63,11 @@ void initialise_asteroid(asteroid* asteroid_in) {
 
 	asteroid_in->oldpos.xpos = x;
 	asteroid_in->oldpos.ypos = y;
+
+	asteroid_in->futurepos.xpos = x;
+	asteroid_in->futurepos.ypos = y;
+
+
 
 	//determine direction towards ship (could this be used to determine collisions?)
 	float delta_x = x - ship_obj.xpos;
@@ -108,37 +115,28 @@ void asteroid_controller() {
 		if (active_asteroids[i].active == true) {
 			asteroid_movement(&active_asteroids[i]);
 
-			//collision checking for asteroids with each other
-			for (int j = 0; j < active_asteroids_count; j++)
-			{
-				if (i != j) {
-					if (active_asteroids[j].active == true) {
-						if (check_collision(active_asteroids[i].pos.xpos, active_asteroids[i].pos.ypos, active_asteroids[j].pos.xpos, active_asteroids[j].pos.ypos, active_asteroids[i].radius, active_asteroids[j].radius))
-						{
-							//printf("boing");
-						}
-					}
-				}
-			}
 
-			 move_circle(&active_asteroids[i].outline_visual, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, ASTEROID_POINTS);
-			 move_circle(&active_asteroids[i].outline, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, CIRCLE_POINTS);
+
+			move_circle(&active_asteroids[i].outline_visual, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, ASTEROID_POINTS);
+			move_circle(&active_asteroids[i].outline, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, CIRCLE_POINTS);
 
 			draw_circle(&active_asteroids[i].outline_visual, ASTEROID_POINTS, active_asteroids[i].rotation);
 			//draw_circle(&active_asteroids[i].outline, CIRCLE_POINTS, 0);
 
-			if (arena_border_collision(&active_asteroids[i].outline) == none)
+			if (arena_border_collision(active_asteroids[i].futurepos.xpos, active_asteroids[i].futurepos.ypos, active_asteroids[i].radius) == none)
 			{
 				active_asteroids[i].initialised = true;
 			}
-			
+
 			//this means that the asteroid has fully entered the field
 			if (active_asteroids[i].initialised) {
-				//asteroid_out_of_bounds_check(&active_asteroids[i]);
 
-				//printf("initialised");
+				//when a damn asteroid escapes
+				asteroid_out_of_bounds_check(&active_asteroids[i]);
 
-				switch (arena_border_collision(&active_asteroids[i].outline))
+
+
+				switch (arena_border_collision(active_asteroids[i].futurepos.xpos, active_asteroids[i].futurepos.ypos, active_asteroids[i].radius))
 				{
 				case north:
 					if (active_asteroids[i].last_hit_wall != north) {
@@ -176,6 +174,25 @@ void asteroid_controller() {
 					}
 					break;
 				case none:
+					//collision checking for asteroids with each other
+					for (int j = 0; j < active_asteroids_count; j++)
+					{
+						if (i != j) {
+							if (active_asteroids[j].active == true) {
+								if (check_collision(active_asteroids[i].futurepos.xpos,
+									active_asteroids[i].futurepos.ypos,
+									active_asteroids[j].futurepos.xpos,
+									active_asteroids[j].futurepos.ypos,
+									active_asteroids[i].radius,
+									active_asteroids[j].radius))
+								{
+									//printf("boing");
+									active_asteroids[i].direction -= 180;
+									active_asteroids[j].direction -= 180;
+								}
+							}
+						}
+					}
 					break;
 				}
 			}
@@ -184,7 +201,13 @@ void asteroid_controller() {
 
 	ship_collision();
 	bullet_collision();
-	
+
+	if (check_ship_death())
+	{
+		printf("check_ship_death()");
+		has_died();
+	}
+
 	char score_str[10] = "Score: ";
 	score_str[7] = score / 10 + '0';
 	score_str[8] = score % 10 + '0';
@@ -196,7 +219,18 @@ void asteroid_controller() {
 	time_str[6] = cur_time / 100 + '0';
 	time_str[7] = (cur_time % 100) / 10 + '0';
 	time_str[8] = cur_time % 10 + '0';
-	draw_string(-g_screen_width / 2 + 40, g_screen_height / 2 - 60, time_str);	
+	draw_string(-g_screen_width / 2 + 40, g_screen_height / 2 - 60, time_str);
+
+
+}
+
+
+
+void restart()
+{
+	game_over = false;
+	restart_ship();
+	initialise_asteroid_controller();
 }
 
 bool asteroid_out_of_bounds_check(asteroid* ast) {
@@ -223,9 +257,12 @@ void asteroid_movement(asteroid* ast) {
 	ast->pos.xpos += sin(M_PI * ast->direction / 180) * ast->velocity_multiplier;
 	ast->pos.ypos += cos(M_PI * ast->direction / 180) * ast->velocity_multiplier;
 
+	ast->futurepos.xpos += sin(M_PI * ast->direction / 180) * ast->velocity_multiplier;
+	ast->futurepos.ypos += cos(M_PI * ast->direction / 180) * ast->velocity_multiplier;
+
 	ast->outline.center.xpos = ast->pos.xpos;
 	ast->outline.center.ypos = ast->pos.ypos;
-	
+
 	ast->outline_visual.center.xpos = ast->pos.xpos;
 	ast->outline_visual.center.ypos = ast->pos.ypos;
 
@@ -235,7 +272,8 @@ void asteroid_movement(asteroid* ast) {
 	if (ast->rotation_velocity_multiplier > 0)
 	{
 		ast->rotation += 1 + ast->rotation_velocity_multiplier;
-	} else
+	}
+	else
 	{
 		ast->rotation -= 1 + ast->rotation_velocity_multiplier;
 	}
@@ -251,9 +289,7 @@ void ship_collision()
 			if (active_asteroids[i].active) {
 				if (check_collision(active_asteroids[i].pos.xpos, active_asteroids[i].pos.ypos, ship_obj.xpos, ship_obj.ypos, active_asteroids[i].radius, ship_obj.r))
 				{
-					printf("boom");
-					ship_death();
-					initialise_asteroid_controller();
+					has_died();
 				}
 			}
 		}
@@ -290,4 +326,14 @@ void bullet_collision()
 			}
 		}
 	}
+}
+
+void has_died()
+{
+	printf("boom");
+	game_over = true;
+	printf("game over idiot");
+	restart_toggle = false;
+	ship_death();
+	//initialise_asteroid_controller();
 }

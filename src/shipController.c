@@ -4,6 +4,7 @@ bool moving_forward = false;
 bool turning_left = false;
 bool turning_right = false;
 bool fire_bullet = false;
+bool dead = false;
 
 int SHIP_HITBOX_SIZE = 60;
 int SHIP_EDGE_WARNING_SIZE = 200;
@@ -26,7 +27,7 @@ void ship_controller() {
 	move_circle(&ship_warning_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos, CIRCLE_POINTS);
 
 	//display border warning
-	if (arena_border_collision(&ship_warning_circle) != none)
+	if (arena_border_collision(ship_obj.xpos, ship_obj.ypos, ship_warning_circle.radius) != none)
 	//if (out_of_bounds(ship_obj.xpos, ship_obj.ypos, SHIP_EDGE_WARNING_SIZE))
 	{
 		//printf("%i",arena_border_collision(&ship_warning_circle));
@@ -56,6 +57,7 @@ void ship_init() {
 	ship_obj.b = (float)rand() / RAND_MAX;
 	ship_obj.direction = 0;
 	ship_obj.v = 0;
+	dead = false;
 }
 
 void ship_movement() {
@@ -85,7 +87,11 @@ void initialise_ship_circles()
 void ship_death()
 {
 	//printf("you have died.");
-	
+	dead = true;
+}
+
+void restart_ship()
+{
 	set_reset_time();
 	ship_init();
 	initialise_ship_circles();
@@ -93,10 +99,10 @@ void ship_death()
 
 bool death_check(circle_coord_array* cca)
 {
-	if (arena_border_collision(cca) != none)
+	if (arena_border_collision(cca->center.xpos, cca->center.ypos, cca->radius) != none)
 	{
 		//TODO: NEED TO RESET ASTEROID CONTROLLER ON DEATHS FROM THIS CLASS
-		printf("arena border collision %i", arena_border_collision(&ship_warning_circle));
+		//printf("arena border collision %i", arena_border_collision(ship_obj.xpos, ship_obj.ypos, ship_warning_circle.radius));
 		return true;
 	}
 	return false;
@@ -139,12 +145,6 @@ void particle_movement(particle* ast) {
 	ast->radius *= 0.95;
 
 	ast->lifespan--;
-}
-
-//Maybe not needed?
-void align_thrusters()
-{
-	
 }
 
 void launch_particle()
@@ -244,5 +244,10 @@ void bullet_controller()
 void kill_bullet(int index)
 {
 	active_bullets[index].active = false;
+}
+
+bool check_ship_death()
+{
+	return dead;
 }
 

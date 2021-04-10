@@ -39,19 +39,24 @@ void on_key_press(unsigned char key, int x, int y)
 		break;
 	case 'w':
 		moving_forward = true;
+		restart_toggle = true;
 		break;
 	case 'a':
 		turning_left = true;
 		turning_right = false;
+		restart_toggle = true;
 		break;
 	case 'd':
 		turning_left = false;
 		turning_right = true;
+		restart_toggle = true;
 		break;
 	case ' ':
 		fire_bullet = true;
+		restart_toggle = true;
 		break;
 	default:
+		restart_toggle = true;
 		break;
 	}
 }
@@ -123,13 +128,20 @@ void update_game_state()
 void render_frame()
 {
 	draw_arena(g_screen_width, g_screen_height);
-	ship_controller();
-	asteroid_controller();
-	particle_controller();
-	bullet_controller();
-	//update_time();
-
-
+	if (!game_over) {
+		ship_controller();
+		asteroid_controller();
+		particle_controller();
+		bullet_controller();
+	}
+	else {
+		//update_time();
+		draw_string(-20, 0, "Game Over");
+		if (restart_toggle)
+		{
+			restart();
+		}
+	}
 }
 
 void initialise_game()

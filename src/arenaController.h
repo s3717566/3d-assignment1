@@ -11,5 +11,5 @@ typedef enum arena_collision
 	none
 } arena_collision;
 
-arena_collision arena_border_collision(circle_coord_array* cca);
+arena_collision arena_border_collision(float x, float y, float radius);
 bool out_of_bounds(float x, float y, float radius);
