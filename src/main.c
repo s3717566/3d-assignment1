@@ -61,6 +61,24 @@ void on_key_press(unsigned char key, int x, int y)
 	}
 }
 
+void on_mouse_press(int button, int state, int x, int y)
+{
+	//fprintf(stderr, "on_key_press()\n");
+	if (button == GLUT_LEFT_BUTTON) {
+		switch (state)
+		{
+		case GLUT_DOWN:
+			fire_bullet = true;
+			break;
+		case GLUT_UP:
+			fire_bullet = false;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 void on_key_release(unsigned char key, int x, int y)
 {
 	//fprintf(stderr, "on_key_release()\n");
@@ -74,6 +92,8 @@ void on_key_release(unsigned char key, int x, int y)
 	case 'd':
 		turning_right = false;
 		break;
+	case ' ':
+		fire_bullet = false;
 	default:
 		break;
 	}
@@ -171,6 +191,7 @@ void init_app(int* argcp, char** argv)
 	glutFullScreen();
 	glutReshapeFunc(on_reshape);
 	glutKeyboardFunc(on_key_press);
+	glutMouseFunc(on_mouse_press);
 	glutKeyboardUpFunc(on_key_release);
 	glutSetKeyRepeat(GLUT_KEY_REPEAT_OFF);
 

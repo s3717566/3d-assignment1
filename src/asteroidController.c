@@ -219,7 +219,7 @@ void asteroid_controller() {
 	time_str[6] = cur_time / 100 + '0';
 	time_str[7] = (cur_time % 100) / 10 + '0';
 	time_str[8] = cur_time % 10 + '0';
-	draw_string(-g_screen_width / 2 + 40, g_screen_height / 2 - 60, time_str);
+	draw_string(g_screen_width / 2 - 140, g_screen_height / 2 - 40, time_str);
 
 
 }

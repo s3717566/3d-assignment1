@@ -147,5 +147,5 @@ int get_time()
 
 void set_reset_time()
 {
-	time_on_death = get_time() + time_on_death;
+	time_on_death += get_time();
 }

@@ -193,7 +193,7 @@ void launch_bullet()
 				}
 			}
 			bullet_cooldown = 100;
-			fire_bullet = false;
+			//fire_bullet = false;
 
 		}
 	}
