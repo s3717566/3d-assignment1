@@ -3,24 +3,16 @@
 arena_collision arena_border_collision(float x, float y, float radius)
 {
 	 if (x - radius < -g_screen_width / 2)
-	 {
 	 	return west;
-	 }
 	
 	 if (x + radius > g_screen_width / 2)
-	 {
 	 	return east;
-	 }
 	
 	 if (y + radius > g_screen_height / 2)
-	 {
 	 	return north;
-	 }
 	
 	 if (y - radius < -g_screen_height / 2) 
-	 {
 	 	return south;
-	 }
 	
 	return none;
 }

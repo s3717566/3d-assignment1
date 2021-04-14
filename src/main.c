@@ -20,6 +20,11 @@
 
 bool round_over = false;
 
+unsigned char forward_char = 'w';
+unsigned char left_char = 'a';
+unsigned char right_char = 'd';
+
+
 void on_key_press(unsigned char key, int x, int y);
 void on_key_release(unsigned char key, int x, int y);
 void on_reshape(int w, int h);
@@ -32,38 +37,33 @@ int main(int argc, char** argv);
 
 void on_key_press(unsigned char key, int x, int y)
 {
-	//fprintf(stderr, "on_key_press()\n");
-	switch (key) {
-	case KEY_ESC:
+	if (key == KEY_ESC) {
 		exit(EXIT_SUCCESS);
-		break;
-	case 'w':
+	}
+	
+	if (key == forward_char) {
 		moving_forward = true;
-		restart_toggle = true;
-		break;
-	case 'a':
+	}
+	
+	if (key == left_char) {
 		turning_left = true;
 		turning_right = false;
-		restart_toggle = true;
-		break;
-	case 'd':
+	}
+	
+	if (key == right_char) {
 		turning_left = false;
 		turning_right = true;
-		restart_toggle = true;
-		break;
-	case ' ':
-		fire_bullet = true;
-		restart_toggle = true;
-		break;
-	default:
-		restart_toggle = true;
-		break;
 	}
+	
+	if (key == ' ') {
+		fire_bullet = true;
+	}
+	
+	restart_toggle = true;
 }
 
 void on_mouse_press(int button, int state, int x, int y)
 {
-	//fprintf(stderr, "on_key_press()\n");
 	if (button == GLUT_LEFT_BUTTON) {
 		switch (state)
 		{
@@ -81,21 +81,20 @@ void on_mouse_press(int button, int state, int x, int y)
 
 void on_key_release(unsigned char key, int x, int y)
 {
-	//fprintf(stderr, "on_key_release()\n");
-	switch (key) {
-	case 'w':
+	if (key == forward_char) {
 		moving_forward = false;
-		break;
-	case 'a':
+	}
+
+	if (key == left_char) {
 		turning_left = false;
-		break;
-	case 'd':
+	}
+
+	if (key == right_char) {
 		turning_right = false;
-		break;
-	case ' ':
+	}
+
+	if (key == ' ') {
 		fire_bullet = false;
-	default:
-		break;
 	}
 }
 
@@ -103,7 +102,6 @@ void on_reshape(int w, int h)
 {
 	g_screen_width = w;
 	g_screen_height = h;
-	printf("g_screen_width: %i", g_screen_width);
 
 	fprintf(stderr, "on_reshape(%d, %d)\n", w, h);
 	glViewport(0, 0, w, h);
@@ -125,7 +123,6 @@ void on_reshape(int w, int h)
 
 void on_display()
 {
-	//fprintf(stderr, "on_display()\n");
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -157,6 +154,8 @@ void render_frame()
 	else {
 		//update_time();
 		draw_string(-20, 0, "Game Over");
+		asteroid_controller_afterlife();
+		ship_controller_afterlife();
 		if (restart_toggle)
 		{
 			restart();

@@ -22,6 +22,7 @@ typedef struct {
 	float direction;         // direction facing (out of 360 degrees)
 	float v;           // velocity in pixels per second
 	float rotation;
+	float radius;
 } ship_object;
 
 typedef struct {
@@ -43,12 +44,13 @@ typedef struct {
 } bullet;
 
 void ship_controller();
+void ship_controller_afterlife();
 void ship_init();
 void ship_movement();
 void initialise_ship_circles();
 void ship_death();
 bool death_check(circle_coord_array* cca);
-void particle_movement(particle* ast);
+void particle_movement(particle* part);
 void particle_controller();
 void initialise_particle(particle* particle);
 void launch_particle();
@@ -59,7 +61,6 @@ void bullet_controller();
 void kill_bullet(int index);
 bool check_ship_death();
 void restart_ship();
-
 
 extern bool moving_forward;
 extern bool turning_left;

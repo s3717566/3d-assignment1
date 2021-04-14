@@ -27,36 +27,43 @@ void ship_controller() {
 	move_circle(&ship_warning_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos, CIRCLE_POINTS);
 
 	//display border warning
-	if (arena_border_collision(ship_obj.xpos, ship_obj.ypos, ship_warning_circle.radius) != none)
-	//if (out_of_bounds(ship_obj.xpos, ship_obj.ypos, SHIP_EDGE_WARNING_SIZE))
-	{
-		//printf("%i",arena_border_collision(&ship_warning_circle));
-		arena_warning(true);
-	}
-	else
-	{
-		arena_warning(false);
-	}
+
+	arena_warning(arena_border_collision(ship_obj.xpos, ship_obj.ypos, ship_warning_circle.radius));
 
 	//debug
 	draw_circle(&ship_hitbox_circle, CIRCLE_POINTS, 0);
 	draw_circle(&ship_warning_circle, CIRCLE_POINTS, 0);
 
-	if (death_check(&ship_hitbox_circle)) {
+	if (arena_border_collision(ship_obj.xpos, ship_obj.ypos, ship_obj.radius) != none)
+	{
+		printf("You have hit an arena wall");
 		ship_death();
 	}
 }
 
+void ship_controller_afterlife()
+{
+	draw_ship(ship_obj.xpos, ship_obj.ypos, ship_obj.direction++);
+}
+
+
 void ship_init() {
-	ship_obj.xpos = 00;
-	ship_obj.ypos = 00;
-	ship_obj.oldxpos = 00;
-	ship_obj.oldypos = 00;
+	//ship_obj.xpos = 00;
+	//ship_obj.ypos = 00;
+	//ship_obj.oldxpos = 00;
+	//ship_obj.oldypos = 00;
+
+	ship_obj.xpos = -600;
+	ship_obj.ypos = -300;
+	ship_obj.oldxpos = -600;
+	ship_obj.oldypos = -300;
+	
 	ship_obj.r = (float)rand() / RAND_MAX;
 	ship_obj.g = (float)rand() / RAND_MAX;
 	ship_obj.b = (float)rand() / RAND_MAX;
-	ship_obj.direction = 0;
+	ship_obj.direction = 45;
 	ship_obj.v = 0;
+	ship_obj.radius = SHIP_HITBOX_SIZE;
 	dead = false;
 }
 
@@ -134,17 +141,15 @@ void particle_controller()
 	}
 }
 
-void particle_movement(particle* ast) {
+void particle_movement(particle* part) {
 	//printf("asteroid is moving weee");
-	ast->old_pos.xpos = ast->pos.xpos;
-	ast->old_pos.ypos = ast->pos.ypos;
 
-	ast->pos.xpos += sin(M_PI * ast->direction / 180) * ast->v;
-	ast->pos.ypos += cos(M_PI * ast->direction / 180) * ast->v;
+	part->pos.xpos += sin(M_PI * part->direction / 180) * part->v;
+	part->pos.ypos += cos(M_PI * part->direction / 180) * part->v;
 	
-	ast->radius *= 0.95;
+	part->radius *= 0.95;
 
-	ast->lifespan--;
+	part->lifespan--;
 }
 
 void launch_particle()
@@ -208,6 +213,7 @@ void initialise_bullet(bullet* bullet)
 	
 	bullet->direction = ship_obj.direction;
 	bullet->v = 1 * BULLET_SPEED_MULTIPLIER;
+	bullet->r = 5;
 
 	bullet->active = true;
 
@@ -215,10 +221,6 @@ void initialise_bullet(bullet* bullet)
 }
 
 void bullet_movement(bullet* bullet) {
-	//TODO: old_pos doesnt seem to be needed
-	bullet->old_pos.xpos = bullet->pos.xpos;
-	bullet->old_pos.ypos = bullet->pos.ypos;
-
 	bullet->pos.xpos += sin(M_PI * bullet->direction / 180) * bullet->v;
 	bullet->pos.ypos += cos(M_PI * bullet->direction / 180) * bullet->v;
 
