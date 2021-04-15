@@ -15,8 +15,8 @@
 
 #include "circle.h"
 
-int g_screen_width = 0;
-int g_screen_height = 0;
+int g_screen_width = ARENA_WIDTH;
+int g_screen_height = ARENA_HEIGHT;
 int time_on_death = 0;
 
 //arena_border colours
@@ -47,33 +47,32 @@ void draw_arena(int screen_width, int screen_height) {
 
 	//south wall
 	glColor3f(red_south, 0, blue_south);
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(-(screen_width / 2), -(screen_height / 2));
-	glVertex2f(screen_width / 2, -(screen_height / 2));
+	glBegin(GL_LINES);
+	glVertex2f(-(g_screen_width / 2), -(g_screen_height / 2));
+	glVertex2f(g_screen_width / 2, -(g_screen_height / 2));
 	glEnd();
 
 	//east wall
 	glColor3f(red_east, 0, blue_east);
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(screen_width / 2, -(screen_height / 2));
-	glVertex2f(screen_width / 2, (screen_height / 2));
+	glBegin(GL_LINES);
+	glVertex2f(g_screen_width / 2, -(g_screen_height / 2));
+	glVertex2f(g_screen_width / 2, (g_screen_height / 2));
 	glEnd();
 
 	//north wall
 	glColor3f(red_north, 0, blue_north);
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(screen_width / 2, (screen_height / 2));
-	glVertex2f(-(screen_width / 2), screen_height / 2);
+	glBegin(GL_LINES);
+	glVertex2f(g_screen_width / 2, (g_screen_height / 2));
+	glVertex2f(-(g_screen_width / 2), g_screen_height / 2);
 	glEnd();
 
 	//west wall
 	glColor3f(red_west, 0, blue_west);
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(-(screen_width / 2), screen_height / 2);
-	glVertex2f(-(screen_width / 2), -(screen_height / 2));
+	glBegin(GL_LINES);
+	glVertex2f(-(g_screen_width / 2), g_screen_height / 2);
+	glVertex2f(-(g_screen_width / 2), -(g_screen_height / 2));
 	glEnd();
 
-	glEnd();
 	glPopMatrix();
 }
 
@@ -91,30 +90,30 @@ void draw_ship(float x, float y, float direction) {
 
 	glColor3f(ship_red, ship_green, ship_blue);
 	glBegin(GL_TRIANGLE_STRIP);
-	glVertex2f(x, y + 55);
-	glVertex2f(x, y - 35);
-	glVertex2f(x + 50, y - 55);
+	glVertex2f(x, y + 35);
+	glVertex2f(x, y - 25);
+	glVertex2f(x + 30, y - 35);
 	glEnd();
 
 	glBegin(GL_TRIANGLE_STRIP);
-	glVertex2f(x, y + 55);
-	glVertex2f(x, y - 35);
-	glVertex2f(x - 50, y - 55);
+	glVertex2f(x, y + 35);
+	glVertex2f(x, y - 25);
+	glVertex2f(x - 30, y - 35);
 	glEnd();
 
 	//outline
 	glColor3f(ship_outline_red, ship_outline_green, ship_outline_blue);
 	glLineWidth(4);
 	glBegin(GL_LINE_LOOP);
-	glVertex2f(x, y + 55);
-	glVertex2f(x, y - 35);
-	glVertex2f(x + 50, y - 55);
+	glVertex2f(x, y + 35);
+	glVertex2f(x, y - 25);
+	glVertex2f(x + 30, y - 35);
 	glEnd();
 
 	glBegin(GL_LINE_LOOP);
-	glVertex2f(x, y + 55);
-	glVertex2f(x, y - 35);
-	glVertex2f(x - 50, y - 55);
+	glVertex2f(x, y + 35);
+	glVertex2f(x, y - 25);
+	glVertex2f(x - 30, y - 35);
 	glEnd();
 	
 	glPopMatrix();

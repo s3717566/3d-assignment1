@@ -5,6 +5,7 @@
 #include "arenaController.h"
 
 #define SPEED_MULTIPLIER 4
+#define TURN_MULTIPLIER 1.5
 #define SHIP_HITBOX_RADIUS 20
 #define MAX_PARTICLES 50
 #define PARTICLE_INITIAL_SIZE 10

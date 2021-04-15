@@ -100,8 +100,8 @@ void on_key_release(unsigned char key, int x, int y)
 
 void on_reshape(int w, int h)
 {
-	g_screen_width = w;
-	g_screen_height = h;
+	//g_screen_width = w;
+	//g_screen_height = h;
 
 	fprintf(stderr, "on_reshape(%d, %d)\n", w, h);
 	glViewport(0, 0, w, h);
@@ -147,20 +147,18 @@ void render_frame()
 	draw_arena(g_screen_width, g_screen_height);
 	if (!game_over) {
 		ship_controller();
-		asteroid_controller();
 		particle_controller();
 		bullet_controller();
 	}
 	else {
-		//update_time();
 		draw_string(-20, 0, "Game Over");
-		asteroid_controller_afterlife();
 		ship_controller_afterlife();
 		if (restart_toggle)
 		{
 			restart();
 		}
 	}
+	asteroid_controller();
 }
 
 void initialise_game()

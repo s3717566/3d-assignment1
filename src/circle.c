@@ -57,7 +57,5 @@ void initialise_circle(float radius, circle_coord_array* cca, float initialX, fl
 
 	cca->center.xpos = initialX;
 	cca->center.ypos = initialY;
-	cca->initial_center.xpos = initialX;
-	cca->initial_center.ypos = initialY;
 	cca->radius = radius;
 }

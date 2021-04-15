@@ -30,7 +30,6 @@ typedef struct {
 
 void initialise_asteroid_controller();
 void asteroid_controller();
-void asteroid_controller_afterlife();
 void initialise_asteroid(float x, float y, float direction, float radius, bool split);
 void new_asteroid();
 void split_asteroid(asteroid* ast);

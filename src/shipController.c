@@ -6,7 +6,7 @@ bool turning_right = false;
 bool fire_bullet = false;
 bool dead = false;
 
-int SHIP_HITBOX_SIZE = 60;
+int SHIP_HITBOX_SIZE = 40;
 int SHIP_EDGE_WARNING_SIZE = 200;
 int INITIAL_PARTICLE_SIZE = 10;
 int current_particle = 0;
@@ -16,7 +16,6 @@ int bullet_cooldown = 0;
 circle_coord_array ship_hitbox_circle;
 circle_coord_array ship_warning_circle;
 particle active_particles[MAX_PARTICLES];
-
 
 void ship_controller() {
 	draw_ship(ship_obj.xpos, ship_obj.ypos, ship_obj.direction);
@@ -48,11 +47,6 @@ void ship_controller_afterlife()
 
 
 void ship_init() {
-	//ship_obj.xpos = 00;
-	//ship_obj.ypos = 00;
-	//ship_obj.oldxpos = 00;
-	//ship_obj.oldypos = 00;
-
 	ship_obj.xpos = -600;
 	ship_obj.ypos = -300;
 	ship_obj.oldxpos = -600;
@@ -77,10 +71,10 @@ void ship_movement() {
 		launch_particle();
 	}
 	if (turning_left) {
-		ship_obj.direction--;
+		ship_obj.direction -= TURN_MULTIPLIER;
 	}
 	if (turning_right) {
-		ship_obj.direction++;
+		ship_obj.direction += TURN_MULTIPLIER;
 	}
 	//printf("angle: " + ship_obj.direction);
 }
@@ -209,7 +203,7 @@ void launch_bullet()
 void initialise_bullet(bullet* bullet)
 {
 	bullet->pos.xpos = ship_obj.xpos;
-	bullet->pos.ypos = ship_obj.ypos + 40;
+	bullet->pos.ypos = ship_obj.ypos;
 	
 	bullet->direction = ship_obj.direction;
 	bullet->v = 1 * BULLET_SPEED_MULTIPLIER;

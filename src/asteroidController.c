@@ -70,11 +70,13 @@ void split_asteroid(asteroid* ast)
 
 		radius = ast->radius / 2;
 
+		//first asteroid
 		x = ast->pos.xpos + (ast->radius * 1.1);
 		y = ast->pos.ypos + (ast->radius * 1.1);
 		direction = ast->direction + 90;
 		initialise_asteroid(x, y, direction, radius, true);
 
+		//second asteroid
 		x = ast->pos.xpos - (ast->radius * 1.1);
 		y = ast->pos.ypos - (ast->radius * 1.1);
 		direction = ast->direction - 90;
@@ -112,7 +114,7 @@ void initialise_asteroid(float x, float y, float direction, float radius, bool s
 	asteroid_in->last_hit_wall = none;
 	asteroid_in->rotation = 0;
 	asteroid_in->rotation_velocity_multiplier = (rand() % 200) * 0.01 - 1;
-	
+
 	asteroid_in->pos.xpos = x;
 	asteroid_in->pos.ypos = y;
 	asteroid_in->oldpos.xpos = x;
@@ -127,6 +129,7 @@ void initialise_asteroid(float x, float y, float direction, float radius, bool s
 }
 
 void asteroid_controller() {
+	//if there are no more active asteroids this wave, then the wave is over
 	bool wave_over = true;
 	for (int i = 0; i < active_asteroids_count; i++) {
 		if (active_asteroids[i].active == true) {
@@ -176,13 +179,15 @@ void asteroid_controller() {
 		}
 	}
 
-	ship_collision();
-	bullet_collision();
+	if (!game_over) {
+		ship_collision();
+		bullet_collision();
 
-	if (check_ship_death())
-	{
-		printf("check_ship_death()");
-		has_died();
+		if (check_ship_death())
+		{
+			printf("check_ship_death()");
+			has_died();
+		}
 	}
 
 	char score_str[10] = "Score: ";
@@ -258,16 +263,6 @@ void asteroid_bouncing(asteroid* ast)
 		break;
 	case none:
 		break;
-	}
-}
-
-void asteroid_controller_afterlife()
-{
-	for (int i = 0; i < active_asteroids_count; i++) {
-		if (active_asteroids[i].active == true) {
-			draw_circle(&active_asteroids[i].outline_visual, ASTEROID_POINTS, active_asteroids[i].rotation);
-			rotate_asteroid(&active_asteroids[i]);
-		}
 	}
 }
 

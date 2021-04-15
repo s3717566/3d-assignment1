@@ -3,6 +3,8 @@
 #include "circle.h"
 
 #define ASTEROID_POINTS 12
+#define ARENA_WIDTH 1820
+#define ARENA_HEIGHT 980
 
 typedef enum arena_collision
 {
