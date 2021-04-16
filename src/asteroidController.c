@@ -2,7 +2,7 @@
 
 int ASTEROID_MIN_SIZE = 40;
 int ASTEROID_MAX_SIZE = 100;
-int ASTEROID_SPAWN_RADIUS = 1500;  //default: 1500
+//int ASTEROID_SPAWN_RADIUS = 1500;  //default: 1500
 
 asteroid active_asteroids[MAX_ASTEROID_LIMIT];
 
@@ -18,7 +18,9 @@ int id = 0;
 
 void initialise_asteroid_controller()
 {
-	initialise_circle(ASTEROID_SPAWN_RADIUS, &asteroid_spawning_circle, 0, 0, CIRCLE_POINTS, false);
+	//initiate spawning circle: adding 20% to account for corners
+	int asteroid_spawning_circle_radius = (arena_width / 2) + (arena_width / 5);
+	initialise_circle(asteroid_spawning_circle_radius, &asteroid_spawning_circle, 0, 0, CIRCLE_POINTS, false);
 	score = 0;
 	wave_number = 0;
 	active_asteroids_count = 0;
@@ -49,8 +51,8 @@ void new_asteroid()
 	}
 
 	//determine direction towards ship (could this be used to determine collisions?)
-	float delta_x = x - ship_obj.xpos;
-	float delta_y = y - ship_obj.ypos;
+	float delta_x = x - ship_obj.x_pos;
+	float delta_y = y - ship_obj.y_pos;
 	float direction_rad = atan2(delta_y, delta_x);
 	//printf("angle: %f", direction_rad);
 
@@ -114,7 +116,7 @@ void initialise_asteroid(float x, float y, float direction, float radius, bool s
 	asteroid_in->last_hit_wall = none;
 	asteroid_in->rotation = 0;
 	asteroid_in->rotation_velocity_multiplier = (rand() % 200) * 0.01 - 1;
-
+	asteroid_in->time_spawned = get_time();
 	asteroid_in->pos.xpos = x;
 	asteroid_in->pos.ypos = y;
 	asteroid_in->oldpos.xpos = x;
@@ -146,7 +148,7 @@ void asteroid_controller() {
 
 			for (int i = 0; i < wave_number && i < MAX_ASTEROID_LIMIT; i++) {
 				new_asteroid();
-				printf("initialising asteroid with index: %i, id: %i\n", i, active_asteroids[i].id);
+				//printf("initialising asteroid with index: %i, id: %i\n", i, active_asteroids[i].id);
 				asteroid_to_string(&active_asteroids[i]);
 			}
 			frames_until_next_wave = 60 * TICKS_BETWEEN_WAVES; //CHANGE THIS - how many frames in a second?
@@ -160,9 +162,12 @@ void asteroid_controller() {
 		if (active_asteroids[i].active == true) {
 			asteroid_movement(&active_asteroids[i]);
 
-			move_circle(&active_asteroids[i].outline_visual, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, ASTEROID_POINTS);
-			move_circle(&active_asteroids[i].outline, active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, CIRCLE_POINTS);
-
+			move_circle(&active_asteroids[i].outline_visual, 
+				active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, 
+				active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, ASTEROID_POINTS);
+			move_circle(&active_asteroids[i].outline, 
+				active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, 
+				active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, CIRCLE_POINTS);
 			draw_circle(&active_asteroids[i].outline_visual, ASTEROID_POINTS, active_asteroids[i].rotation);
 
 			//Initialises asteroids once they are in the arena
@@ -171,9 +176,11 @@ void asteroid_controller() {
 				active_asteroids[i].initialised = true;
 			}
 
-			if (active_asteroids[i].initialised) {
+			//if an asteroid has entered the arena or 10 seconds has elapsed
+			if (active_asteroids[i].initialised || active_asteroids[i].time_spawned + 10 < get_time()) {
 				//when an asteroid sneakily escapes
 				asteroid_out_of_bounds_check(&active_asteroids[i]);
+				
 				asteroid_bouncing(&active_asteroids[i]);
 			}
 		}
@@ -190,10 +197,16 @@ void asteroid_controller() {
 		}
 	}
 
+	string_controller();
+	
+}
+
+void string_controller()
+{
 	char score_str[10] = "Score: ";
 	score_str[7] = score / 10 + '0';
 	score_str[8] = score % 10 + '0';
-	draw_string(-g_screen_width / 2 + 40, g_screen_height / 2 - 40, score_str);
+	draw_string(-arena_width / 2 + 40, arena_height / 2 - 40, score_str);
 
 	//now that this is fixed it probably doesnt need to be here
 	cur_time = get_time();
@@ -201,7 +214,7 @@ void asteroid_controller() {
 	time_str[6] = cur_time / 100 + '0';
 	time_str[7] = (cur_time % 100) / 10 + '0';
 	time_str[8] = cur_time % 10 + '0';
-	draw_string(g_screen_width / 2 - 140, g_screen_height / 2 - 40, time_str);
+	draw_string(arena_width / 2 - 140, arena_height / 2 - 40, time_str);
 }
 
 void asteroid_bouncing(asteroid* ast)
@@ -276,7 +289,7 @@ void restart()
 bool asteroid_out_of_bounds_check(asteroid* ast) {
 	if (out_of_bounds(ast->pos.xpos, ast->pos.ypos, ast->radius))
 	{
-		printf("Boom... asteroid destroyed at %f, %f, width: %i, height: %i", ast->pos.xpos, ast->pos.ypos, g_screen_width, g_screen_height);
+		printf("Boom... asteroid destroyed at %f, %f, width: %i, height: %i", ast->pos.xpos, ast->pos.ypos, arena_width, arena_height);
 
 		ast->active = false;
 		return true;
@@ -322,7 +335,7 @@ void ship_collision()
 		if (active_asteroids[i].initialised) {
 			if (active_asteroids[i].active) {
 				if (check_collision(active_asteroids[i].pos.xpos, active_asteroids[i].pos.ypos,
-					ship_obj.xpos, ship_obj.ypos,
+					ship_obj.x_pos, ship_obj.y_pos,
 					active_asteroids[i].radius, ship_obj.radius))
 				{
 					has_died();

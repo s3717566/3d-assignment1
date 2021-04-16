@@ -37,20 +37,22 @@ int main(int argc, char** argv);
 
 void on_key_press(unsigned char key, int x, int y)
 {
+	key = toupper(key);
+	
 	if (key == KEY_ESC) {
 		exit(EXIT_SUCCESS);
 	}
 	
-	if (key == forward_char) {
+	if (key == toupper(forward_char)) {
 		moving_forward = true;
 	}
 	
-	if (key == left_char) {
+	if (key == toupper(left_char)) {
 		turning_left = true;
 		turning_right = false;
 	}
 	
-	if (key == right_char) {
+	if (key == toupper(right_char)) {
 		turning_left = false;
 		turning_right = true;
 	}
@@ -81,15 +83,17 @@ void on_mouse_press(int button, int state, int x, int y)
 
 void on_key_release(unsigned char key, int x, int y)
 {
-	if (key == forward_char) {
+	key = toupper(key);
+
+	if (key == toupper(forward_char)) {
 		moving_forward = false;
 	}
 
-	if (key == left_char) {
+	if (key == toupper(left_char)) {
 		turning_left = false;
 	}
 
-	if (key == right_char) {
+	if (key == toupper(right_char)) {
 		turning_right = false;
 	}
 
@@ -144,7 +148,7 @@ void update_game_state()
 
 void render_frame()
 {
-	draw_arena(g_screen_width, g_screen_height);
+	draw_arena(arena_width, arena_height);
 	if (!game_over) {
 		ship_controller();
 		particle_controller();

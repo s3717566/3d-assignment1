@@ -6,5 +6,6 @@
 #include <stdbool.h>
 #include <math.h>
 #include <time.h>
+#include <ctype.h>
 
 #define M_PI 3.14159265358979323846

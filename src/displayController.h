@@ -24,5 +24,5 @@ void draw_string(float x, float y, char* string);
 int get_time();
 void set_reset_time();
 
-extern int g_screen_width;
-extern int g_screen_height;
+extern int arena_width;
+extern int arena_height;

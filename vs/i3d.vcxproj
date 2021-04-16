@@ -168,7 +168,6 @@
     <ClInclude Include="..\src\displayController.h" />
     <ClInclude Include="..\src\essentials.h" />
     <ClInclude Include="..\src\main.h" />
-    <ClInclude Include="..\src\shipAsteroidConnection.h" />
     <ClInclude Include="..\src\shipController.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

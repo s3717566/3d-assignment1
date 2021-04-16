@@ -15,8 +15,8 @@
 
 #include "circle.h"
 
-int g_screen_width = ARENA_WIDTH;
-int g_screen_height = ARENA_HEIGHT;
+int arena_width = ARENA_WIDTH;
+int arena_height = ARENA_HEIGHT;
 int time_on_death = 0;
 
 //arena_border colours
@@ -48,29 +48,29 @@ void draw_arena(int screen_width, int screen_height) {
 	//south wall
 	glColor3f(red_south, 0, blue_south);
 	glBegin(GL_LINES);
-	glVertex2f(-(g_screen_width / 2), -(g_screen_height / 2));
-	glVertex2f(g_screen_width / 2, -(g_screen_height / 2));
+	glVertex2f(-(arena_width / 2), -(arena_height / 2));
+	glVertex2f(arena_width / 2, -(arena_height / 2));
 	glEnd();
 
 	//east wall
 	glColor3f(red_east, 0, blue_east);
 	glBegin(GL_LINES);
-	glVertex2f(g_screen_width / 2, -(g_screen_height / 2));
-	glVertex2f(g_screen_width / 2, (g_screen_height / 2));
+	glVertex2f(arena_width / 2, -(arena_height / 2));
+	glVertex2f(arena_width / 2, (arena_height / 2));
 	glEnd();
 
 	//north wall
 	glColor3f(red_north, 0, blue_north);
 	glBegin(GL_LINES);
-	glVertex2f(g_screen_width / 2, (g_screen_height / 2));
-	glVertex2f(-(g_screen_width / 2), g_screen_height / 2);
+	glVertex2f(arena_width / 2, (arena_height / 2));
+	glVertex2f(-(arena_width / 2), arena_height / 2);
 	glEnd();
 
 	//west wall
 	glColor3f(red_west, 0, blue_west);
 	glBegin(GL_LINES);
-	glVertex2f(-(g_screen_width / 2), g_screen_height / 2);
-	glVertex2f(-(g_screen_width / 2), -(g_screen_height / 2));
+	glVertex2f(-(arena_width / 2), arena_height / 2);
+	glVertex2f(-(arena_width / 2), -(arena_height / 2));
 	glEnd();
 
 	glPopMatrix();
@@ -206,7 +206,7 @@ void draw_string(float x, float y, char* string) {
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluOrtho2D(-(g_screen_width / 2), g_screen_width / 2, -(g_screen_height / 2), g_screen_height / 2);
+	gluOrtho2D(-(arena_width / 2), arena_width / 2, -(arena_height / 2), arena_height / 2);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();

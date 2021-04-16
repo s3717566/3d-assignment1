@@ -16,6 +16,7 @@ typedef struct {
 	float rotation_velocity_multiplier;
 	float rotation;
 	float radius;
+	int time_spawned;
 	bool initialised;
 	bool active;
 	bool split;
@@ -43,6 +44,7 @@ void restart();
 void has_died();
 void rotate_asteroid(asteroid* ast);
 void asteroid_bouncing(asteroid* ast);
+void string_controller();
 
 extern bool restart_toggle;
 extern bool game_over;

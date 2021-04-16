@@ -18,22 +18,22 @@ circle_coord_array ship_warning_circle;
 particle active_particles[MAX_PARTICLES];
 
 void ship_controller() {
-	draw_ship(ship_obj.xpos, ship_obj.ypos, ship_obj.direction);
+	draw_ship(ship_obj.x_pos, ship_obj.y_pos, ship_obj.direction);
 	ship_movement();
 
-	move_circle(&ship_hitbox_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos, CIRCLE_POINTS);
+	move_circle(&ship_hitbox_circle, ship_obj.old_x_pos - ship_obj.x_pos, ship_obj.old_y_pos - ship_obj.y_pos, CIRCLE_POINTS);
 
-	move_circle(&ship_warning_circle, ship_obj.oldxpos - ship_obj.xpos, ship_obj.oldypos - ship_obj.ypos, CIRCLE_POINTS);
+	move_circle(&ship_warning_circle, ship_obj.old_x_pos - ship_obj.x_pos, ship_obj.old_y_pos - ship_obj.y_pos, CIRCLE_POINTS);
 
 	//display border warning
 
-	arena_warning(arena_border_collision(ship_obj.xpos, ship_obj.ypos, ship_warning_circle.radius));
+	arena_warning(arena_border_collision(ship_obj.x_pos, ship_obj.y_pos, ship_warning_circle.radius));
 
 	//debug
-	draw_circle(&ship_hitbox_circle, CIRCLE_POINTS, 0);
-	draw_circle(&ship_warning_circle, CIRCLE_POINTS, 0);
+	//draw_circle(&ship_hitbox_circle, CIRCLE_POINTS, 0);
+	//draw_circle(&ship_warning_circle, CIRCLE_POINTS, 0);
 
-	if (arena_border_collision(ship_obj.xpos, ship_obj.ypos, ship_obj.radius) != none)
+	if (arena_border_collision(ship_obj.x_pos, ship_obj.y_pos, ship_obj.radius) != none)
 	{
 		printf("You have hit an arena wall");
 		ship_death();
@@ -42,32 +42,53 @@ void ship_controller() {
 
 void ship_controller_afterlife()
 {
-	draw_ship(ship_obj.xpos, ship_obj.ypos, ship_obj.direction++);
+	draw_ship(ship_obj.x_pos, ship_obj.y_pos, ship_obj.direction++);
 }
 
 
 void ship_init() {
-	ship_obj.xpos = -600;
-	ship_obj.ypos = -300;
-	ship_obj.oldxpos = -600;
-	ship_obj.oldypos = -300;
-	
-	ship_obj.r = (float)rand() / RAND_MAX;
-	ship_obj.g = (float)rand() / RAND_MAX;
-	ship_obj.b = (float)rand() / RAND_MAX;
+	ship_obj.x_pos = -600;
+	ship_obj.y_pos = -300;
+	ship_obj.old_x_pos = -600;
+	ship_obj.old_y_pos = -300;
+
+	ship_obj.red = (float)rand() / RAND_MAX;
+	ship_obj.green = (float)rand() / RAND_MAX;
+	ship_obj.blue = (float)rand() / RAND_MAX;
 	ship_obj.direction = 45;
-	ship_obj.v = 0;
+	ship_obj.velocity = 0;
 	ship_obj.radius = SHIP_HITBOX_SIZE;
 	dead = false;
 }
 
+void acceleration_controller()
+{
+	if (moving_forward && ship_obj.velocity < 1)
+	{
+		if (ship_obj.velocity < 1)
+			ship_obj.velocity += ACCELERATION_RATE * 0.01;
+	}
+	else
+	{
+		if (ship_obj.velocity > 0)
+			ship_obj.velocity -= ACCELERATION_RATE * 0.01;
+		if (ship_obj.velocity < 0)
+		{
+			ship_obj.velocity = 0;
+		}
+	}
+}
+
 void ship_movement() {
-	ship_obj.oldxpos = ship_obj.xpos;
-	ship_obj.oldypos = ship_obj.ypos;
+	ship_obj.old_x_pos = ship_obj.x_pos;
+	ship_obj.old_y_pos = ship_obj.y_pos;
+
+	acceleration_controller();
+
+	ship_obj.x_pos += sin(M_PI * ship_obj.direction / 180) * ship_obj.velocity * SPEED_MULTIPLIER;
+	ship_obj.y_pos += cos(M_PI * ship_obj.direction / 180) * ship_obj.velocity * SPEED_MULTIPLIER;
 
 	if (moving_forward) {
-		ship_obj.xpos += sin(M_PI * ship_obj.direction / 180) * SPEED_MULTIPLIER;
-		ship_obj.ypos += cos(M_PI * ship_obj.direction / 180) * SPEED_MULTIPLIER;
 		launch_particle();
 	}
 	if (turning_left) {
@@ -81,8 +102,8 @@ void ship_movement() {
 
 void initialise_ship_circles()
 {
-	initialise_circle(SHIP_HITBOX_SIZE, &ship_hitbox_circle, ship_obj.xpos, ship_obj.ypos, CIRCLE_POINTS, false);
-	initialise_circle(SHIP_EDGE_WARNING_SIZE, &ship_warning_circle, ship_obj.xpos, ship_obj.ypos, CIRCLE_POINTS, false);
+	initialise_circle(SHIP_HITBOX_SIZE, &ship_hitbox_circle, ship_obj.x_pos, ship_obj.y_pos, CIRCLE_POINTS, false);
+	initialise_circle(SHIP_EDGE_WARNING_SIZE, &ship_warning_circle, ship_obj.x_pos, ship_obj.y_pos, CIRCLE_POINTS, false);
 }
 
 void ship_death()
@@ -124,7 +145,7 @@ void particle_controller()
 	for (int i = 0; i < MAX_PARTICLES; i++)
 	{
 		//TEMP POSITIONING
-		if (active_particles[i].lifespan > 0) 
+		if (active_particles[i].lifespan > 0)
 		{
 			particle_movement(&active_particles[i]);
 			//initialise_circle needs to be used here as a circle cant just "change size", a new circle must be drawn with a new radius at the spot of the old one.
@@ -138,9 +159,9 @@ void particle_controller()
 void particle_movement(particle* part) {
 	//printf("asteroid is moving weee");
 
-	part->pos.xpos += sin(M_PI * part->direction / 180) * part->v;
-	part->pos.ypos += cos(M_PI * part->direction / 180) * part->v;
-	
+	part->pos.xpos += sin(M_PI * part->direction / 180) * part->velocity;
+	part->pos.ypos += cos(M_PI * part->direction / 180) * part->velocity;
+
 	part->radius *= 0.95;
 
 	part->lifespan--;
@@ -157,8 +178,9 @@ void launch_particle()
 		{
 			current_particle = 0;
 		}
-		
-	} else
+
+	}
+	else
 	{
 		particle_cooldown -= PARTICLE_FREQUENCY;
 	}
@@ -166,13 +188,13 @@ void launch_particle()
 
 void initialise_particle(particle* particle)
 {
-	particle->pos.xpos = ship_obj.xpos - 10 + (rand() % 20);
-	particle->pos.ypos = ship_obj.ypos - 10;
+	particle->pos.xpos = ship_obj.x_pos - 10 + (rand() % 20);
+	particle->pos.ypos = ship_obj.y_pos - 10 + (rand() % 20);
 
 	particle->radius = PARTICLE_INITIAL_SIZE;
 	particle->direction = 180 + ship_obj.direction;
 	particle->lifespan = PARTICLE_LIFESPAN;
-	particle->v = PARTICLE_SPEED_MULTIPLIER;
+	particle->velocity = PARTICLE_SPEED_MULTIPLIER;
 
 	initialise_circle(particle->radius, &particle->cca, particle->pos.xpos, particle->pos.ypos, CIRCLE_POINTS, false);
 }
@@ -197,14 +219,14 @@ void launch_bullet()
 		}
 	}
 
-	bullet_cooldown -= FIRING_RATE;	
+	bullet_cooldown -= FIRING_RATE;
 }
 
 void initialise_bullet(bullet* bullet)
 {
-	bullet->pos.xpos = ship_obj.xpos;
-	bullet->pos.ypos = ship_obj.ypos;
-	
+	bullet->pos.xpos = ship_obj.x_pos;
+	bullet->pos.ypos = ship_obj.y_pos;
+
 	bullet->direction = ship_obj.direction;
 	bullet->v = 1 * BULLET_SPEED_MULTIPLIER;
 	bullet->r = 5;
