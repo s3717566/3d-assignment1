@@ -8,13 +8,14 @@ asteroid active_asteroids[MAX_ASTEROID_LIMIT];
 
 circle_coord_array asteroid_spawning_circle;
 int active_asteroids_count = 0;
-int frames_until_next_wave = 0;
-int wave_number = 20;
+int seconds_until_next_wave = 0;
+int wave_number = 0;
 int score = 0;
 int cur_time = 0;
 bool game_over = false;
 bool restart_toggle = false;
 int id = 0;
+int wave_end_time = 0;
 
 void initialise_asteroid_controller()
 {
@@ -24,7 +25,7 @@ void initialise_asteroid_controller()
 	score = 0;
 	wave_number = 0;
 	active_asteroids_count = 0;
-	frames_until_next_wave = 0;
+	seconds_until_next_wave = 0;
 
 	//reset asteroids
 	for (int i = 0; i < MAX_ASTEROID_LIMIT; i++)
@@ -39,13 +40,13 @@ void new_asteroid()
 	float x, y = 0;
 	if (rand() % 2 == 0) {
 		//upper hemisphere
-		int index = rand() % 99;
+		int index = 1 + rand() % CIRCLE_POINTS - 1;
 		x = asteroid_spawning_circle.upper[index].xpos;
 		y = asteroid_spawning_circle.upper[index].ypos;
 	}
 	else {
 		//lower hemisphere
-		int index = rand() % 99;
+		int index = 1 + rand() % CIRCLE_POINTS - 1;
 		x = asteroid_spawning_circle.lower[index].xpos;
 		y = asteroid_spawning_circle.lower[index].ypos;
 	}
@@ -109,7 +110,8 @@ void initialise_asteroid(float x, float y, float direction, float radius, bool s
 	asteroid_in->direction = direction;
 	asteroid_in->radius = radius;
 	asteroid_in->id = id++;
-	asteroid_in->velocity_multiplier = 0.8 + (rand() % 30 * 0.1);
+	int max_ast_speed = MAX_ASTEROID_SPEED * 10;
+	asteroid_in->velocity_multiplier = MIN_ASTEROID_SPEED + (rand() % max_ast_speed * 0.1);
 	asteroid_in->active = true;
 	asteroid_in->hp = (radius / 40);
 	asteroid_in->initialised = false;
@@ -140,21 +142,21 @@ void asteroid_controller() {
 	}
 
 	if (wave_over) {
+		if (wave_end_time == 0)
+		{
+			wave_end_time = get_time();
+		}
 		//initialise wave
-		if (frames_until_next_wave <= 0) {
+		if (wave_end_time + SECONDS_BETWEEN_WAVES < get_time()) {
+			wave_end_time = 0;
 			wave_number++;
 			active_asteroids_count = 0;
 			printf("launching wave %i", wave_number);
 
 			for (int i = 0; i < wave_number && i < MAX_ASTEROID_LIMIT; i++) {
 				new_asteroid();
-				//printf("initialising asteroid with index: %i, id: %i\n", i, active_asteroids[i].id);
 				asteroid_to_string(&active_asteroids[i]);
 			}
-			frames_until_next_wave = 60 * TICKS_BETWEEN_WAVES; //CHANGE THIS - how many frames in a second?
-		}
-		else {
-			frames_until_next_wave--;
 		}
 	}
 
@@ -169,6 +171,7 @@ void asteroid_controller() {
 				active_asteroids[i].oldpos.xpos - active_asteroids[i].pos.xpos, 
 				active_asteroids[i].oldpos.ypos - active_asteroids[i].pos.ypos, CIRCLE_POINTS);
 			draw_circle(&active_asteroids[i].outline_visual, ASTEROID_POINTS, active_asteroids[i].rotation);
+			draw_circle(&asteroid_spawning_circle, CIRCLE_POINTS, 0);
 
 			//Initialises asteroids once they are in the arena
 			if (arena_border_collision(active_asteroids[i].futurepos.xpos, active_asteroids[i].futurepos.ypos, active_asteroids[i].radius) == none)
@@ -177,7 +180,8 @@ void asteroid_controller() {
 			}
 
 			//if an asteroid has entered the arena or 10 seconds has elapsed
-			if (active_asteroids[i].initialised || active_asteroids[i].time_spawned + 10 < get_time()) {
+			//printf("time spawned: %i, current_time: %i", active_asteroids[i].time_spawned, get_time());
+			if (active_asteroids[i].initialised || active_asteroids[i].time_spawned + 5 < get_time()) {
 				//when an asteroid sneakily escapes
 				asteroid_out_of_bounds_check(&active_asteroids[i]);
 				
@@ -234,6 +238,7 @@ void asteroid_bouncing(asteroid* ast)
 					ast->direction += 180;
 					active_asteroids[j].direction += 180;
 					ast->last_hit_wall = none;
+					active_asteroids[j].last_hit_wall = none;
 				}
 			}
 		}
@@ -305,11 +310,11 @@ void asteroid_movement(asteroid* ast) {
 	ast->oldpos.xpos = ast->pos.xpos;
 	ast->oldpos.ypos = ast->pos.ypos;
 
-	ast->pos.xpos += sin(M_PI * ast->direction / 180) * ast->velocity_multiplier;
-	ast->pos.ypos += cos(M_PI * ast->direction / 180) * ast->velocity_multiplier;
+	ast->pos.xpos += sin(M_PI * ast->direction / 180) * ast->velocity_multiplier * delta_time;
+	ast->pos.ypos += cos(M_PI * ast->direction / 180) * ast->velocity_multiplier * delta_time;
 
-	ast->futurepos.xpos += sin(M_PI * ast->direction / 180) * ast->velocity_multiplier;
-	ast->futurepos.ypos += cos(M_PI * ast->direction / 180) * ast->velocity_multiplier;
+	ast->futurepos.xpos += sin(M_PI * ast->direction / 180) * ast->velocity_multiplier * delta_time;
+	ast->futurepos.ypos += cos(M_PI * ast->direction / 180) * ast->velocity_multiplier * delta_time;
 
 	ast->outline.center.xpos = ast->pos.xpos;
 	ast->outline.center.ypos = ast->pos.ypos;
@@ -352,6 +357,8 @@ void damage_asteroid(asteroid* ast)
 	{
 		score++;
 		split_asteroid(ast);
+		for (int i = 0; i < 50; i++)
+			launch_particle(rand() % 360, ast->pos.xpos, ast->pos.ypos);
 	}
 }
 

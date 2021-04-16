@@ -8,14 +8,10 @@ bool dead = false;
 
 int SHIP_HITBOX_SIZE = 40;
 int SHIP_EDGE_WARNING_SIZE = 200;
-int INITIAL_PARTICLE_SIZE = 10;
-int current_particle = 0;
-int particle_cooldown = 0;
 int bullet_cooldown = 0;
 
 circle_coord_array ship_hitbox_circle;
 circle_coord_array ship_warning_circle;
-particle active_particles[MAX_PARTICLES];
 
 void ship_controller() {
 	draw_ship(ship_obj.x_pos, ship_obj.y_pos, ship_obj.direction);
@@ -85,17 +81,18 @@ void ship_movement() {
 
 	acceleration_controller();
 
-	ship_obj.x_pos += sin(M_PI * ship_obj.direction / 180) * ship_obj.velocity * SPEED_MULTIPLIER;
-	ship_obj.y_pos += cos(M_PI * ship_obj.direction / 180) * ship_obj.velocity * SPEED_MULTIPLIER;
-
+	ship_obj.x_pos += sin(M_PI * ship_obj.direction / 180) * ship_obj.velocity * SPEED_MULTIPLIER * delta_time;
+	ship_obj.y_pos += cos(M_PI * ship_obj.direction / 180) * ship_obj.velocity * SPEED_MULTIPLIER * delta_time;
+	
 	if (moving_forward) {
-		launch_particle();
+		launch_particle(180 + ship_obj.direction, ship_obj.x_pos, ship_obj.y_pos);
 	}
+	
 	if (turning_left) {
-		ship_obj.direction -= TURN_MULTIPLIER;
+		ship_obj.direction -= TURN_MULTIPLIER * delta_time;
 	}
 	if (turning_right) {
-		ship_obj.direction += TURN_MULTIPLIER;
+		ship_obj.direction += TURN_MULTIPLIER * delta_time;
 	}
 	//printf("angle: " + ship_obj.direction);
 }
@@ -130,75 +127,6 @@ bool death_check(circle_coord_array* cca)
 	return false;
 }
 
-void particle_controller()
-{
-	//get point of back of ship
-	//ensure point rotates when ship does
-	//while (moving forward)
-		//loop through all particles
-			//move particle to new x and y based on configurable velocity and -direction of ship
-			//make smaller
-			//reduce lifespan
-			//when lifespan = 0
-				//set x and y of particle back to ship, with small x range
-	//dont draw if not (moving forward)
-	for (int i = 0; i < MAX_PARTICLES; i++)
-	{
-		//TEMP POSITIONING
-		if (active_particles[i].lifespan > 0)
-		{
-			particle_movement(&active_particles[i]);
-			//initialise_circle needs to be used here as a circle cant just "change size", a new circle must be drawn with a new radius at the spot of the old one.
-			initialise_circle(active_particles[i].radius, &active_particles[i].cca, active_particles[i].pos.xpos, active_particles[i].pos.ypos, CIRCLE_POINTS, false);
-			//move_circle(&active_particles[i].cca, active_particles[i].old_pos.xpos - active_particles[i].pos.xpos, active_particles[i].old_pos.ypos - active_particles[i].pos.ypos, CIRCLE_POINTS);
-			draw_circle(&active_particles[i].cca, CIRCLE_POINTS, 0);
-		}
-	}
-}
-
-void particle_movement(particle* part) {
-	//printf("asteroid is moving weee");
-
-	part->pos.xpos += sin(M_PI * part->direction / 180) * part->velocity;
-	part->pos.ypos += cos(M_PI * part->direction / 180) * part->velocity;
-
-	part->radius *= 0.95;
-
-	part->lifespan--;
-}
-
-void launch_particle()
-{
-	if (particle_cooldown >= 0)
-	{
-		initialise_particle(&active_particles[current_particle]);
-		particle_cooldown = 100;
-		current_particle++;
-		if (current_particle == MAX_PARTICLES - 1)
-		{
-			current_particle = 0;
-		}
-
-	}
-	else
-	{
-		particle_cooldown -= PARTICLE_FREQUENCY;
-	}
-}
-
-void initialise_particle(particle* particle)
-{
-	particle->pos.xpos = ship_obj.x_pos - 10 + (rand() % 20);
-	particle->pos.ypos = ship_obj.y_pos - 10 + (rand() % 20);
-
-	particle->radius = PARTICLE_INITIAL_SIZE;
-	particle->direction = 180 + ship_obj.direction;
-	particle->lifespan = PARTICLE_LIFESPAN;
-	particle->velocity = PARTICLE_SPEED_MULTIPLIER;
-
-	initialise_circle(particle->radius, &particle->cca, particle->pos.xpos, particle->pos.ypos, CIRCLE_POINTS, false);
-}
-
 void launch_bullet()
 {
 	if (fire_bullet) {
@@ -219,7 +147,7 @@ void launch_bullet()
 		}
 	}
 
-	bullet_cooldown -= FIRING_RATE;
+	bullet_cooldown -= FIRING_RATE * delta_time;
 }
 
 void initialise_bullet(bullet* bullet)
@@ -237,8 +165,8 @@ void initialise_bullet(bullet* bullet)
 }
 
 void bullet_movement(bullet* bullet) {
-	bullet->pos.xpos += sin(M_PI * bullet->direction / 180) * bullet->v;
-	bullet->pos.ypos += cos(M_PI * bullet->direction / 180) * bullet->v;
+	bullet->pos.xpos += sin(M_PI * bullet->direction / 180) * bullet->v * delta_time;
+	bullet->pos.ypos += cos(M_PI * bullet->direction / 180) * bullet->v * delta_time;
 
 	if (out_of_bounds(bullet->pos.xpos, bullet->pos.ypos, bullet->r))
 	{

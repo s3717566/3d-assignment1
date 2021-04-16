@@ -37,7 +37,7 @@ void initialise_circle(float radius, circle_coord_array* cca, float initialX, fl
 		}
 
 		x = ((i / (float)circle_points - 0.5) * 2.0) * radius + randomnessX;
-		y = sqrt(radius * radius - x * x) + randomnessY;
+		y = sqrt(abs(radius * radius - x * x)) + randomnessY;
 		cca->upper[i].xpos = x + initialX;
 		cca->upper[i].ypos = y + initialY;
 	}
@@ -50,7 +50,8 @@ void initialise_circle(float radius, circle_coord_array* cca, float initialX, fl
 			randomnessY = 5.0 - (rand() % 100 * 0.1);
 		}
 		x = (i / (float)circle_points - 0.5) * 2.0 * radius + randomnessX;
-		y = -sqrt(radius * radius - x * x) + randomnessY;
+		y = -sqrt(abs(radius * radius - x * x)) + randomnessY;
+		
 		cca->lower[i].xpos = x + initialX;
 		cca->lower[i].ypos = y + initialY;
 	}

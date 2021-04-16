@@ -19,6 +19,7 @@
 #define KEY_ESC 27
 
 bool round_over = false;
+bool first_load = true;
 
 unsigned char forward_char = 'w';
 unsigned char left_char = 'a';
@@ -34,6 +35,8 @@ void render_frame();
 void on_idle();
 void init_app(int* argcp, char** argv);
 int main(int argc, char** argv);
+
+int previous_time = 0;
 
 void on_key_press(unsigned char key, int x, int y)
 {
@@ -104,8 +107,8 @@ void on_key_release(unsigned char key, int x, int y)
 
 void on_reshape(int w, int h)
 {
-	//g_screen_width = w;
-	//g_screen_height = h;
+	/*g_screen_width = w;
+	g_screen_height = h;*/
 
 	fprintf(stderr, "on_reshape(%d, %d)\n", w, h);
 	glViewport(0, 0, w, h);
@@ -148,21 +151,34 @@ void update_game_state()
 
 void render_frame()
 {
+	delta_time = glutGet(GLUT_ELAPSED_TIME) - previous_time;
+	//printf("delta: %i, previous: %i\n", delta_time, previous_time);
+
 	draw_arena(arena_width, arena_height);
-	if (!game_over) {
+	if (!first_load && !game_over) {
 		ship_controller();
 		particle_controller();
 		bullet_controller();
 	}
 	else {
-		draw_string(-20, 0, "Game Over");
+
+
 		ship_controller_afterlife();
 		if (restart_toggle)
 		{
+			first_load = false;
 			restart();
+		}
+
+		if (first_load) {
+			draw_string(-120, 0, "Press any key to start.");
+		}
+		else {
+			draw_string(-40, 0, "Game Over");
 		}
 	}
 	asteroid_controller();
+	previous_time = glutGet(GLUT_ELAPSED_TIME);
 }
 
 void initialise_game()

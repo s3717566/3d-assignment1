@@ -18,7 +18,8 @@
 int arena_width = ARENA_WIDTH;
 int arena_height = ARENA_HEIGHT;
 int time_on_death = 0;
-
+int delta_time = 0;
+	
 //arena_border colours
 float red_north;
 float red_south;
@@ -119,7 +120,6 @@ void draw_ship(float x, float y, float direction) {
 	glPopMatrix();
 }
 
-
 void arena_warning(arena_collision ac_direction) {
 	red_east = 0;
 	red_north = 0;
@@ -177,6 +177,8 @@ void draw_circle(circle_coord_array* cca, int circle_points, float rotation) {
 		glVertex2f(cca->lower[i].xpos, cca->lower[i].ypos);
 	}
 
+	
+
 	glEnd();
 	glPopMatrix();
 }
@@ -227,6 +229,7 @@ void draw_string(float x, float y, char* string) {
 
 int get_time()
 {
+	//printf("time: %i", glutGet(GLUT_ELAPSED_TIME) / 1000);
 	return (glutGet(GLUT_ELAPSED_TIME) / 1000) - time_on_death;
 }
 

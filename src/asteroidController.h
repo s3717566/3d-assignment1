@@ -3,6 +3,7 @@
 #include "displayController.h"
 #include "shipController.h"
 #include "arenaController.h"
+#include "particleController.h"
 
 typedef struct {
 	int id;
@@ -24,10 +25,10 @@ typedef struct {
 	arena_collision last_hit_wall;
 } asteroid;
 
-
 #define MAX_ASTEROID_LIMIT 50
-#define TICKS_BETWEEN_WAVES 5;
-#define MIN_ASTEROID_SPEED 0.8;
+#define SECONDS_BETWEEN_WAVES 2
+#define MIN_ASTEROID_SPEED 0.2
+#define MAX_ASTEROID_SPEED 0.3
 
 void initialise_asteroid_controller();
 void asteroid_controller();

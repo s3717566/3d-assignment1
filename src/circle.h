@@ -2,7 +2,7 @@
 
 #include "essentials.h"
 
-#define CIRCLE_POINTS 100
+#define CIRCLE_POINTS 50
 
 typedef struct {
 	float xpos, ypos;

@@ -2,7 +2,7 @@
 
 #include "circle.h"
 
-#define ASTEROID_POINTS 12
+#define ASTEROID_POINTS 8
 #define ARENA_WIDTH 1820
 #define ARENA_HEIGHT 980
 
@@ -23,6 +23,8 @@ void draw_point(float x, float y);
 void draw_string(float x, float y, char* string);
 int get_time();
 void set_reset_time();
+int get_delta_time();
 
 extern int arena_width;
 extern int arena_height;
+extern int delta_time;

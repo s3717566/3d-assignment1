@@ -159,6 +159,7 @@
     <ClCompile Include="..\src\circle.c" />
     <ClCompile Include="..\src\displayController.c" />
     <ClCompile Include="..\src\main.c" />
+    <ClCompile Include="..\src\particleController.c" />
     <ClCompile Include="..\src\shipController.c" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +169,7 @@
     <ClInclude Include="..\src\displayController.h" />
     <ClInclude Include="..\src\essentials.h" />
     <ClInclude Include="..\src\main.h" />
+    <ClInclude Include="..\src\particleController.h" />
     <ClInclude Include="..\src\shipController.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
